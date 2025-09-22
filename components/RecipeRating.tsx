@@ -21,8 +21,6 @@ interface RatingStats {
   ratings: Rating[];
   totalRatings: number;
   averageRating: number;
-  uniqueCountries: number;
-  countries: string[];
   ratingDistribution: Array<{
     star: number;
     count: number;
@@ -201,14 +199,8 @@ export function RecipeRating({ recipeId, currentRating, onRatingChange }: Recipe
               ))}
             </div>
 
-            {/* Global Reach */}
+            {/* Reviewers */}
             <div className="flex items-center gap-4 pt-4 border-t">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-gray-600">
-                  {ratingStats.uniqueCountries} {ratingStats.uniqueCountries === 1 ? 'country' : 'countries'}
-                </span>
-              </div>
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-blue-500" />
                 <span className="text-sm text-gray-600">
@@ -217,24 +209,6 @@ export function RecipeRating({ recipeId, currentRating, onRatingChange }: Recipe
               </div>
             </div>
 
-            {/* Countries */}
-            {ratingStats.countries.length > 0 && (
-              <div className="pt-2">
-                <p className="text-sm text-gray-600 mb-2">Rated by people from:</p>
-                <div className="flex flex-wrap gap-1">
-                  {ratingStats.countries.slice(0, 10).map((country) => (
-                    <Badge key={country} variant="secondary" className="text-xs">
-                      {country}
-                    </Badge>
-                  ))}
-                  {ratingStats.countries.length > 10 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{ratingStats.countries.length - 10} more
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
 

@@ -8,7 +8,7 @@ export default function PopularRecipesScroll() {
   const router = useRouter();
 
   const handleExploreAllRecipes = () => {
-    router.push('/tiktok');
+    router.push('/recipes');
   };
 
   return (

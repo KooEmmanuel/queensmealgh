@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { ArrowLeft, MessageSquare, Heart, Reply, Send, Loader2, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
+import Footer from '@/components/Footer';
 
 interface Comment {
   _id: string;
@@ -548,6 +549,7 @@ export default function CommunityPage() {
           </div>
         </TabsContent>
       </Tabs>
+      <Footer />
     </div>
   );
 } 

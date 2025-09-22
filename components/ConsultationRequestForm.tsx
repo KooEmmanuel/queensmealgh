@@ -92,8 +92,8 @@ export function ConsultationRequestForm({ packageType, trigger }: ConsultationRe
 
       if (data.success) {
         toast.success('Consultation request submitted successfully!', {
-          description: 'We\'ll reach out to you within 24 hours to discuss your project.',
-          duration: 5000,
+          description: 'Thank you for your interest! We\'ll initiate a follow-up within 24 hours to discuss your project and provide a customized proposal.',
+          duration: 6000,
         });
         setIsOpen(false);
         resetForm();
@@ -135,7 +135,7 @@ export function ConsultationRequestForm({ packageType, trigger }: ConsultationRe
   };
 
   const platforms = [
-    'Instagram', 'TikTok', 'YouTube', 'Facebook', 'Twitter', 'LinkedIn', 'Pinterest', 'Blog'
+    'Instagram', 'TikTok', 'YouTube', 'LinkedIn', 'Pinterest', 'Blog'
   ];
 
   return (

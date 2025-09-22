@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Users, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { RecipeRating } from "@/components/RecipeRating";
+import Footer from '@/components/Footer';
 
 interface Recipe {
   _id: string;
@@ -174,6 +175,7 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 } 

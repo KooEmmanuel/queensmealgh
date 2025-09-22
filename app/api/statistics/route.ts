@@ -5,25 +5,14 @@ export async function GET() {
   try {
     const { db } = await connectToDatabase();
     
-    // Get recipe count from recipes collection
-    const recipeCount = await db.collection('recipes').countDocuments();
+    // Get recipe count from featured_content collection (where recipes are stored)
+    const recipeCount = await db.collection('featured_content').countDocuments();
     
-    // Get community members count from community collection
-    const communityCount = await db.collection('community').countDocuments();
+    // Get community members count from community_users collection
+    const communityCount = await db.collection('community_users').countDocuments();
     
-    // Get unique countries from ratings
-    const countriesData = await db.collection('recipe_ratings').aggregate([
-      {
-        $group: {
-          _id: '$country'
-        }
-      }
-    ]).toArray();
-    
-    const countriesCount = countriesData.length;
-    
-    // Get total views from recipes (sum of view counts)
-    const recipesWithViews = await db.collection('recipes').aggregate([
+    // Get total views from featured_content (sum of view counts)
+    const recipesWithViews = await db.collection('featured_content').aggregate([
       {
         $group: {
           _id: null,
@@ -43,7 +32,6 @@ export async function GET() {
     const statistics = {
       recipes: recipeCount,
       communityMembers: communityCount,
-      countries: countriesCount, // Will be updated when ratings are implemented
       totalViews: totalViews,
       tiktokPosts: tiktokCount,
       blogPosts: blogCount,

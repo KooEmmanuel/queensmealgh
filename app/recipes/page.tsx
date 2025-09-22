@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
+import Footer from '@/components/Footer';
 
 interface Recipe {
   _id: string;
@@ -170,6 +171,7 @@ export default function RecipesPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

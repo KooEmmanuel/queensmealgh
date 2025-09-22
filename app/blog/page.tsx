@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Search, ChevronRight, Filter, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
 import { BlogPost } from '@/types/blog-post';
+import Footer from '@/components/Footer';
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -200,6 +201,7 @@ export default function BlogPage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }

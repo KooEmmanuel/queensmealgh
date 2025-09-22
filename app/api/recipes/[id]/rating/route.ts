@@ -19,7 +19,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { rating, country, userId, userName } = body;
+    const { rating, userId, userName } = body;
 
     // Validate rating
     if (!rating || rating < 1 || rating > 5) {
@@ -32,7 +32,7 @@ export async function POST(
     const { db } = await connectToDatabase();
 
     // Check if recipe exists
-    const recipe = await db.collection('recipes').findOne({
+    const recipe = await db.collection('featured_content').findOne({
       _id: new ObjectId(recipeId)
     });
 
@@ -47,7 +47,6 @@ export async function POST(
     const ratingData = {
       recipeId: new ObjectId(recipeId),
       rating: parseInt(rating),
-      country: country || 'Unknown',
       userId: userId || 'anonymous',
       userName: userName || 'Anonymous',
       createdAt: new Date().toISOString()
@@ -64,11 +63,8 @@ export async function POST(
     const averageRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
     const totalRatings = ratings.length;
 
-    // Get unique countries from ratings
-    const uniqueCountries = [...new Set(ratings.map(r => r.country))];
-
     // Update recipe with new rating data
-    await db.collection('recipes').updateOne(
+    await db.collection('featured_content').updateOne(
       { _id: new ObjectId(recipeId) },
       {
         $set: {
@@ -83,8 +79,7 @@ export async function POST(
       success: true,
       rating: ratingData,
       averageRating: Math.round(averageRating * 10) / 10,
-      totalRatings: totalRatings,
-      uniqueCountries: uniqueCountries.length
+      totalRatings: totalRatings
     });
 
   } catch (error) {
@@ -120,9 +115,6 @@ export async function GET(
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Get unique countries
-    const uniqueCountries = [...new Set(ratings.map(r => r.country))];
-
     // Calculate statistics
     const totalRatings = ratings.length;
     const averageRating = totalRatings > 0 
@@ -142,8 +134,6 @@ export async function GET(
       ratings,
       totalRatings,
       averageRating: Math.round(averageRating * 10) / 10,
-      uniqueCountries: uniqueCountries.length,
-      countries: uniqueCountries,
       ratingDistribution
     });
 

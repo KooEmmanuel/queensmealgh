@@ -13,8 +13,6 @@ import {
   Star, 
   ArrowRight,
   Instagram,
-  Facebook,
-  Twitter,
   Youtube,
   Mail,
   Phone,
@@ -32,7 +30,6 @@ import Footer from '@/components/Footer';
 interface Statistics {
   recipes: number;
   communityMembers: number;
-  countries: number;
   totalViews: number;
   tiktokPosts: number;
   blogPosts: number;
@@ -156,13 +153,13 @@ export default function AboutPage() {
   const stats = statistics ? [
     { number: formatNumber(statistics.recipes), label: "Authentic Recipes" },
     { number: formatNumber(statistics.communityMembers), label: "Community Members" },
-    { number: statistics.countries > 0 ? `${statistics.countries}+` : "Coming Soon", label: "Countries Reached" },
-    { number: formatNumber(statistics.totalViews), label: "Recipe Views" }
+    { number: formatNumber(statistics.totalViews), label: "Recipe Views" },
+    { number: formatNumber(statistics.tiktokPosts), label: "TikTok Videos" }
   ] : [
     { number: "Loading...", label: "Authentic Recipes" },
     { number: "Loading...", label: "Community Members" },
-    { number: "Loading...", label: "Countries Reached" },
-    { number: "Loading...", label: "Recipe Views" }
+    { number: "Loading...", label: "Recipe Views" },
+    { number: "Loading...", label: "TikTok Videos" }
   ];
 
   return (
@@ -189,13 +186,17 @@ export default function AboutPage() {
                 community of food lovers.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
-                  Explore Our Recipes
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-                <Button size="lg" variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-50">
-                  Join Our Community
-                </Button>
+                <Link href="/recipes">
+                  <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
+                    Explore Our Recipes
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/community">
+                  <Button size="lg" variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-50">
+                    Join Our Community
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </div>
@@ -226,64 +227,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Story Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                  Our Story
-                </h2>
-                <div className="space-y-4 text-gray-600 leading-relaxed">
-                  <p>
-                    Queens Meal was born from a simple yet powerful vision: to make authentic African cuisine 
-                    accessible to everyone, everywhere. Founded in 2020 by Chef Sarah Mensah, our journey began 
-                    as a passion project to preserve and share the rich culinary traditions passed down through 
-                    generations.
-                  </p>
-                  <p>
-                    What started as sharing family recipes on social media has grown into a global movement, 
-                    connecting food lovers across continents through the universal language of delicious, 
-                    authentic cooking. We believe that food is more than sustenance—it's culture, heritage, 
-                    and connection.
-                  </p>
-                  <p>
-                    Today, we're proud to be a trusted source for authentic African recipes, cooking techniques, 
-                    and culinary inspiration, serving a community of over 100,000 passionate home cooks and 
-                    food enthusiasts worldwide.
-                  </p>
-                </div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="relative"
-              >
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src="/images/placeholder.jpg"
-                    alt="Chef preparing traditional African dish"
-                    width={600}
-                    height={400}
-                    className="w-full h-auto"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-6 left-6 text-white">
-                    <p className="text-sm font-medium">Chef Sarah in her kitchen</p>
-                    <p className="text-xs opacity-90">Creating authentic African flavors</p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Mission & Vision Section */}
       <section className="py-20 bg-white">
@@ -569,14 +512,18 @@ export default function AboutPage() {
                 Be part of our growing community of food lovers and discover the incredible world of African cuisine
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="secondary" className="bg-white text-orange-500 hover:bg-gray-100">
-                  <ChefHat className="w-4 h-4 mr-2" />
-                  Start Cooking Today
-                </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-500">
-                  <Users className="w-4 h-4 mr-2" />
-                  Join Our Community
-                </Button>
+                <Link href="/recipes">
+                  <Button size="lg" variant="secondary" className="bg-white text-orange-500 hover:bg-gray-100">
+                    <ChefHat className="w-4 h-4 mr-2" />
+                    Start Cooking Today
+                  </Button>
+                </Link>
+                <Link href="/community">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-500">
+                    <Users className="w-4 h-4 mr-2" />
+                    Join Our Community
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </div>

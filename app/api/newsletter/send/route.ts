@@ -14,7 +14,10 @@ export async function POST(request: NextRequest) {
       content,
       tags,
       status = 'sent',
-      sentAt
+      sentAt,
+      recipients,
+      subscriberIds,
+      manualEmails
     } = body;
 
     // Validate required fields
@@ -27,15 +30,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get all active subscribers
-        const subscribers = await db.collection('newsletter_subscriptions')
-      .find({ status: 'active' })
-      .toArray();
+    // Determine recipients
+    let allRecipients: string[] = [];
+    
+    if (recipients && recipients.length > 0) {
+      // Use provided recipients list
+      allRecipients = recipients;
+    } else {
+      // Fallback to old behavior - get all active subscribers
+      const subscribers = await db.collection('newsletter_subscriptions')
+        .find({ status: 'active' })
+        .toArray();
+      
+      allRecipients = subscribers.map((sub: any) => sub.email);
+    }
 
-    if (subscribers.length === 0) {
+    // Add manual emails if provided
+    if (manualEmails && manualEmails.length > 0) {
+      const validManualEmails = manualEmails.filter((email: string) => 
+        email && email.trim() && email.includes('@')
+      );
+      allRecipients = [...allRecipients, ...validManualEmails];
+    }
+
+    // Remove duplicates
+    allRecipients = [...new Set(allRecipients)];
+
+    if (allRecipients.length === 0) {
       return NextResponse.json(
         { 
-          error: 'No active subscribers found' 
+          error: 'No recipients found' 
         },
         { status: 400 }
       );
@@ -59,10 +83,13 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
       updatedAt: new Date(),
       sentAt: new Date(sentAt || new Date()),
-      recipientCount: subscribers.length,
+      recipientCount: allRecipients.length,
       openCount: 0,
       clickCount: 0,
-      htmlContent
+      htmlContent,
+      recipients: allRecipients,
+      subscriberIds: subscriberIds || [],
+      manualEmails: manualEmails || []
     };
 
     const result = await db.collection('newsletters').insertOne(newsletterData);
@@ -79,12 +106,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send emails to all subscribers
-    const emailPromises = subscribers.map(async (subscriber: any) => {
+    // Send emails to all recipients
+    const emailPromises = allRecipients.map(async (email: string) => {
       try {
         const mailOptions = {
           from: `"${process.env.FROM_NAME || 'Queen\'s Meal'}" <${process.env.FROM_EMAIL}>`,
-          to: subscriber.email,
+          to: email,
           subject: content.subject,
           html: htmlContent,
           text: content.previewText, // Fallback text version
@@ -93,14 +120,14 @@ export async function POST(request: NextRequest) {
         const info = await transporter.sendMail(mailOptions);
         
         return {
-          email: subscriber.email,
+          email: email,
           status: 'sent',
           messageId: info.messageId
         };
       } catch (error) {
-        console.error(`Failed to send email to ${subscriber.email}:`, error);
+        console.error(`Failed to send email to ${email}:`, error);
         return {
-          email: subscriber.email,
+          email: email,
           status: 'failed',
           error: (error as Error).message
         };
@@ -131,7 +158,7 @@ export async function POST(request: NextRequest) {
       message: 'Newsletter sent successfully',
       newsletterId,
       stats: {
-        totalSubscribers: subscribers.length,
+        totalRecipients: allRecipients.length,
         successfulSends,
         failedSends
       }

@@ -1,4 +1,5 @@
 import ContactForm from '@/components/ContactForm'; // Import the existing component
+import Footer from '@/components/Footer';
 
 export default function ContactPage() {
   return (
@@ -10,6 +11,7 @@ export default function ContactPage() {
         {/* Render the existing ContactForm component */}
         <ContactForm />
       </div>
+      <Footer />
     </div>
   );
 } 

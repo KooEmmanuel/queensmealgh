@@ -2,6 +2,7 @@ import type React from "react"
 import "@/app/globals.css"
 import { Montserrat, Playfair_Display, Source_Sans_3, Karla } from 'next/font/google'
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import Navbar from "@/components/Navbar"
 
 
@@ -49,6 +50,7 @@ export default function RootLayout({
           {children}
         </main>
         <Toaster />
+        <SonnerToaster />
       </body>
     </html>
   )

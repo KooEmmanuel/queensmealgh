@@ -175,9 +175,7 @@ export function EmailTemplate({ content, className = '' }: EmailTemplateProps) {
               >
                 {link.platform === 'Instagram' && '📷'}
                 {link.platform === 'TikTok' && '🎵'}
-                {link.platform === 'Facebook' && '📘'}
                 {link.platform === 'YouTube' && '📺'}
-                {link.platform === 'Twitter' && '🐦'}
               </a>
             ))}
           </div>
@@ -406,9 +404,7 @@ export function generateHTMLEmailTemplate(content: NewsletterContent): string {
                     <a href="${link.url}" class="social-link" target="_blank" rel="noopener noreferrer">
                         ${link.platform === 'Instagram' ? '📷' : 
                           link.platform === 'TikTok' ? '🎵' : 
-                          link.platform === 'Facebook' ? '📘' : 
-                          link.platform === 'YouTube' ? '📺' : 
-                          link.platform === 'Twitter' ? '🐦' : '🔗'}
+                          link.platform === 'YouTube' ? '📺' : '🔗'}
                     </a>
                 `).join('')}
             </div>

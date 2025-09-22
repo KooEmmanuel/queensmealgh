@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, User, Tag, Share2 } from "lucide-react";
 import RelatedPosts from "@/components/RelatedPosts";
 import { BlogPost } from '@/types/blog-post';
+import Footer from '@/components/Footer';
 
 const renderEditorJsContent = (contentInput: string | object) => {
   let contentData: any;
@@ -257,6 +258,7 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 } 

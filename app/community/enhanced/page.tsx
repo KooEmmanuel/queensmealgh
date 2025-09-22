@@ -23,6 +23,7 @@ import {
   Loader2,
   ArrowLeft
 } from "lucide-react";
+import Footer from '@/components/Footer';
 import Link from "next/link";
 
 interface UserProfile {
@@ -600,6 +601,7 @@ export default function EnhancedCommunityPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

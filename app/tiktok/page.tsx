@@ -1,5 +1,6 @@
 import { TikTokFeed } from "@/components/TikTokFeed";
 import { Metadata } from "next";
+import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
   title: "TikTok Recipes - Queens Meal",
@@ -27,6 +28,7 @@ export default function TikTokPage() {
           <TikTokFeed />
         </div>
       </section>
+      <Footer />
     </div>
   );
 }
