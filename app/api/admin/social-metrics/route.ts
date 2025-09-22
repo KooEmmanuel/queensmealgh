@@ -15,7 +15,7 @@ export async function GET() {
   try {
     const { db } = await connectToDatabase(); // Get db object
     // Use db.collection().find() - ensure collection name matches ('socialMetrics' or 'socialmetrics')
-    const metricsCursor = db.collection('socialmetrics').find({}).sort({ platform: 1, metricType: 1 });
+    const metricsCursor = db.collection('social_metrics').find({}).sort({ platform: 1, metricType: 1 });
     const metrics = await metricsCursor.toArray(); // Convert cursor to array
     return NextResponse.json(metrics);
   } catch (error) {
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
     // Use db.collection().bulkWrite() instead of SocialMetric.bulkWrite()
     // Ensure collection name matches ('socialMetrics' or 'socialmetrics')
-    const result = await db.collection('socialmetrics').bulkWrite(operations as any); 
+    const result = await db.collection('social_metrics').bulkWrite(operations as any); 
 
     return NextResponse.json({ message: "Social metrics updated successfully", result }, { status: 200 });
 

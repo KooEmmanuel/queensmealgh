@@ -1,111 +1,289 @@
-'use client';
-
+"use client";
 import { useState, useEffect } from 'react';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  Search, 
+  Eye, 
+  Send, 
+  Calendar,
+  Users,
+  Mail,
+  TrendingUp,
+  Clock,
+  FileText,
+  Trash2
+} from "lucide-react";
+import { toast } from "sonner";
+import { EmailTemplate } from '@/components/EmailTemplate';
 
-interface Subscription {
+interface Newsletter {
   _id: string;
-  email: string;
-  subscribedAt: string; // Store as string after fetching
+  subject: string;
+  previewText: string;
+  content: any;
+  tags: string[];
+  status: 'draft' | 'sent' | 'scheduled';
+  createdAt: string;
+  sentAt?: string;
+  recipientCount: number;
+  openCount: number;
+  clickCount: number;
 }
 
 export function NewsletterList() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
-    const fetchSubscriptions = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch('/api/admin/newsletter'); // Use the new admin API route
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch subscriptions');
-        }
-        const data: Subscription[] = await response.json();
-        setSubscriptions(data);
-      } catch (err: any) {
-        console.error("Error fetching newsletter subscriptions:", err);
-        setError(err.message || 'Could not load subscriptions.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchNewsletters();
+  }, [statusFilter]);
 
-    fetchSubscriptions();
-  }, []);
+  const fetchNewsletters = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (statusFilter && statusFilter !== 'all') {
+        params.append('status', statusFilter);
+      }
+      
+      const response = await fetch(`/api/newsletter/save?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setNewsletters(data.newsletters);
+      }
+    } catch (error) {
+      console.error('Error fetching newsletters:', error);
+      toast.error('Failed to fetch newsletters');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteNewsletter = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this newsletter?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/newsletter/${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Newsletter deleted successfully');
+        fetchNewsletters();
+      } else {
+        toast.error(data.error || 'Failed to delete newsletter');
+      }
+    } catch (error) {
+      console.error('Error deleting newsletter:', error);
+      toast.error('Failed to delete newsletter');
+    }
+  };
+
+  const openPreview = (newsletter: Newsletter) => {
+    setSelectedNewsletter(newsletter);
+    setIsPreviewOpen(true);
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'sent': return 'bg-green-100 text-green-800';
+      case 'scheduled': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const filteredNewsletters = newsletters.filter(newsletter => {
+    const matchesSearch = searchTerm === '' || 
+      newsletter.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      newsletter.previewText.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-10">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        <span className="ml-2 text-sm sm:text-base">Loading Subscriptions...</span>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2">Loading newsletters...</span>
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center py-10 text-red-600">
-        <AlertTriangle className="h-6 w-6 mr-2" />
-        <span className="text-sm sm:text-base">{error}</span>
-      </div>
-    );
-  }
-
-  if (subscriptions.length === 0) {
-    return <p className="text-center text-gray-500 py-10 text-sm sm:text-base">No newsletter subscriptions yet.</p>;
   }
 
   return (
-    <div>
-      <h3 className="text-lg sm:text-xl font-semibold mb-4">Newsletter Subscribers ({subscriptions.length})</h3>
-      
-      {/* Desktop Table View */}
-      <div className="hidden lg:block">
-        <ScrollArea className="h-[400px] border rounded-md">
-          <Table>
-            <TableHeader className="sticky top-0 bg-gray-50 z-10">
-              <TableRow>
-                <TableHead className="w-[60%]">Email Address</TableHead>
-                <TableHead>Subscribed On</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {subscriptions.map((sub) => (
-                <TableRow key={sub._id}>
-                  <TableCell className="font-medium">{sub.email}</TableCell>
-                  <TableCell>{new Date(sub.subscribedAt).toLocaleDateString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="lg:hidden">
-        <div className="space-y-3 max-h-[400px] overflow-y-auto border rounded-md p-3">
-          {subscriptions.map((sub) => (
-            <div key={sub._id} className="border rounded-lg p-3 sm:p-4 bg-white">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm sm:text-base text-gray-900 break-all">{sub.email}</p>
-                </div>
-                <div className="flex-shrink-0">
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    {new Date(sub.subscribedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search newsletters..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        
+        <div className="sm:w-48">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="scheduled">Scheduled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
+
+      {/* Newsletters List */}
+      {filteredNewsletters.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No newsletters found</h3>
+            <p className="text-gray-500">Create your first newsletter using the generator on the left.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {filteredNewsletters.map((newsletter) => (
+            <Card key={newsletter._id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          {newsletter.subject}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {newsletter.previewText}
+                        </p>
+                      </div>
+                      <Badge className={`ml-4 ${getStatusBadgeClass(newsletter.status)}`}>
+                        {newsletter.status}
+                      </Badge>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(newsletter.createdAt).toLocaleDateString()}
+                      </div>
+                      
+                      {newsletter.status === 'sent' && (
+                        <>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            {newsletter.recipientCount} sent
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className="h-4 w-4" />
+                            {newsletter.openCount} opens
+                          </div>
+                        </>
+                      )}
+                      
+                      {newsletter.tags && newsletter.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {newsletter.tags.slice(0, 3).map((tag, index) => (
+                            <span
+                              key={index}
+                              className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                          {newsletter.tags.length > 3 && (
+                            <span className="text-xs text-gray-400">
+                              +{newsletter.tags.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 lg:flex-col lg:items-end">
+                    <div className="text-right text-sm text-gray-500">
+                      {newsletter.status === 'sent' && newsletter.sentAt && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          Sent {new Date(newsletter.sentAt).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openPreview(newsletter)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      
+                      {newsletter.status === 'draft' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteNewsletter(newsletter._id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Newsletter Preview</DialogTitle>
+          </DialogHeader>
+          
+          {selectedNewsletter && (
+            <div className="mt-4">
+              <EmailTemplate content={selectedNewsletter} />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
-} 
+}

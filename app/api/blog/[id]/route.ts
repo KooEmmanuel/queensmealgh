@@ -18,7 +18,7 @@ export async function GET(
     
     const { db } = await connectToDatabase();
     
-    const post = await db.collection('blogPosts').findOne({
+    const post = await db.collection('blog_posts').findOne({
       _id: new ObjectId(id)
     });
     
@@ -88,7 +88,7 @@ export async function PUT(
 
     Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
-    const result = await db.collection('blogPosts').updateOne(
+    const result = await db.collection('blog_posts').updateOne(
       { _id: new ObjectId(id) },
       {
         $set: updateData
@@ -102,7 +102,7 @@ export async function PUT(
       );
     }
 
-    const updatedPost = await db.collection('blogPosts').findOne({ _id: new ObjectId(id) });
+    const updatedPost = await db.collection('blog_posts').findOne({ _id: new ObjectId(id) });
 
     if (updatedPost && typeof updatedPost.content === 'string') {
         try {
@@ -138,7 +138,7 @@ export async function DELETE(
     
     const { db } = await connectToDatabase();
     
-    const result = await db.collection('blogPosts').deleteOne({
+    const result = await db.collection('blog_posts').deleteOne({
       _id: new ObjectId(id)
     });
     

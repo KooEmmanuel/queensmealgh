@@ -1,12 +1,12 @@
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { PricingSubscriptionsList } from "@/components/admin/PricingSubscriptionsList";
+import { ConsultationRequestsList } from "@/components/admin/ConsultationRequestsList";
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function AdminPricingPage() {
   return (
     <AuthProvider>
       <AdminLayout>
-        <PricingSubscriptionsList />
+        <ConsultationRequestsList />
       </AdminLayout>
     </AuthProvider>
   );

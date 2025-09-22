@@ -24,10 +24,33 @@ export async function GET(request: Request) {
     }
     
     // Otherwise, fetch all discussions
-    const discussions = await db.collection('discussions')
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray();
+    // Try new threads collection first, fallback to legacy discussions
+    let discussions;
+    
+    try {
+      const threads = await db.collection('threads')
+        .find({})
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .toArray();
+      
+      // Map threads to legacy discussion format for backward compatibility
+      discussions = threads.map(thread => ({
+        _id: thread._id,
+        title: thread.title,
+        content: thread.content,
+        author: thread.author,
+        createdAt: thread.createdAt,
+        likes: thread.likes,
+        comments: thread.comments || []
+      }));
+    } catch (error) {
+      // Fallback to legacy discussions collection
+      discussions = await db.collection('discussions')
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+    }
     
     return NextResponse.json(discussions);
   } catch (error) {

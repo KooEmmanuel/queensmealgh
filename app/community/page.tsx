@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
-import { ArrowLeft, MessageSquare, Heart, Reply, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, MessageSquare, Heart, Reply, Send, Loader2, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
 interface Comment {
@@ -360,13 +360,24 @@ export default function CommunityPage() {
         </Link>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <Avatar className="h-8 w-8 mr-2">
-              <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="font-medium">{username}</span>
-          </div>
-          <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          <Link href="/community/enhanced">
+            <Button className="bg-green-600 hover:bg-green-700">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Enhanced Community
+            </Button>
+          </Link>
+          
+          {isLoggedIn && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center">
+                <Avatar className="h-8 w-8 mr-2">
+                  <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="font-medium">{username}</span>
+              </div>
+              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+            </div>
+          )}
         </div>
       </div>
       

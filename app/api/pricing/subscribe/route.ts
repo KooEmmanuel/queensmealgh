@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Get subscriptions
-    const subscriptions = await db.collection('pricingsubscriptions')
+    const subscriptions = await db.collection('pricing_subscriptions')
       .find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       .toArray();
 
     // Get total count
-    const total = await db.collection('pricingsubscriptions').countDocuments(query);
+    const total = await db.collection('pricing_subscriptions').countDocuments(query);
 
     return NextResponse.json({
       success: true,
@@ -111,11 +111,11 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date()
     };
 
-    const result = await db.collection('pricingsubscriptions').insertOne(subscriptionData);
+    const result = await db.collection('pricing_subscriptions').insertOne(subscriptionData);
 
     // In a real application, you would integrate with a payment gateway here
     // For now, we'll simulate a successful payment
-    await db.collection('pricingsubscriptions').updateOne(
+    await db.collection('pricing_subscriptions').updateOne(
       { _id: result.insertedId },
       { 
         $set: { 

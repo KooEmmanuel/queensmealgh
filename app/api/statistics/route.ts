@@ -35,7 +35,7 @@ export async function GET() {
     const totalViews = recipesWithViews.length > 0 ? recipesWithViews[0].totalViews : 0;
     
     // Get TikTok posts count for additional content
-    const tiktokCount = await db.collection('tiktok_posts').countDocuments();
+    const tiktokCount = await db.collection('tiktok_videos').countDocuments();
     
     // Get blog posts count
     const blogCount = await db.collection('blog_posts').countDocuments();

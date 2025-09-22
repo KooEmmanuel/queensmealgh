@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { SubscriptionForm } from "@/components/SubscriptionForm"
+import { ConsultationRequestForm } from "@/components/ConsultationRequestForm"
 import { 
   UtensilsCrossed, 
   Calendar, 
@@ -99,8 +99,8 @@ export default function ServicesSection() {
             className="w-full max-w-5xl mx-auto"
           >
             <div className="text-center mb-8">
-              <h3 className="text-3xl font-bold text-gray-800 mb-3 font-playfair">Simple Pricing</h3>
-              <p className="text-gray-600">Choose what works for your business</p>
+              <h3 className="text-3xl font-bold text-gray-800 mb-3 font-playfair">Let's Discuss Your Project</h3>
+              <p className="text-gray-600">Request a free consultation to discuss your specific needs and budget</p>
             </div>
 
             <div className="flex justify-center">
@@ -114,8 +114,8 @@ export default function ServicesSection() {
               >
                 <Card className="group flex flex-col justify-between border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white">
                   <CardHeader className="pb-3 pt-6">
-                    <CardTitle className="text-xl font-bold text-center font-playfair text-gray-800">Weekly</CardTitle>
-                    <p className="text-center text-gray-500 text-sm">Perfect for testing</p>
+                    <CardTitle className="text-xl font-bold text-center font-playfair text-gray-800">Weekly Package</CardTitle>
+                    <p className="text-center text-gray-500 text-sm">Starting from GHC 3,000/week</p>
                   </CardHeader>
                   
                   <CardContent className="text-center py-4 px-6">
@@ -135,20 +135,19 @@ export default function ServicesSection() {
                     </div>
                     
                     <div className="space-y-1">
-                      <p className="text-3xl font-bold text-center text-gray-800 font-montserrat">
-                        GHC 3,000
+                      <p className="text-lg font-semibold text-center text-gray-600">
+                        Custom pricing based on your needs
                       </p>
-                      <p className="text-xs text-gray-500">per week</p>
+                      <p className="text-xs text-gray-500">Let's discuss your requirements</p>
                     </div>
                   </CardContent>
                   
                   <CardFooter className="pt-3 pb-6 px-6">
-                    <SubscriptionForm
+                    <ConsultationRequestForm
                       packageType="weekly"
-                      amount={3000}
                       trigger={
                         <Button className="w-full bg-gray-800 hover:bg-gray-900 text-white py-2 rounded-lg font-medium transition-all duration-300">
-                          Get Started
+                          Request Free Consultation
                         </Button>
                       }
                     />
@@ -174,8 +173,8 @@ export default function ServicesSection() {
                 
                 <Card className="group flex flex-col justify-between border-2 border-green-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white">
                   <CardHeader className="pb-3 pt-8">
-                    <CardTitle className="text-xl font-bold text-center font-playfair text-gray-800">Monthly</CardTitle>
-                    <p className="text-center text-gray-500 text-sm">Best value</p>
+                    <CardTitle className="text-xl font-bold text-center font-playfair text-gray-800">Monthly Package</CardTitle>
+                    <p className="text-center text-gray-500 text-sm">Starting from GHC 5,000/month</p>
                   </CardHeader>
                   
                   <CardContent className="text-center py-4 px-6">
@@ -199,20 +198,19 @@ export default function ServicesSection() {
                     </div>
                     
                     <div className="space-y-1">
-                      <p className="text-3xl font-bold text-center text-gray-800 font-montserrat">
-                        GHC 5,000
+                      <p className="text-lg font-semibold text-center text-gray-600">
+                        Custom pricing based on your needs
                       </p>
-                      <p className="text-xs text-gray-500">per month</p>
+                      <p className="text-xs text-gray-500">Let's discuss your requirements</p>
                     </div>
                   </CardContent>
                   
                   <CardFooter className="pt-3 pb-6 px-6">
-                    <SubscriptionForm
+                    <ConsultationRequestForm
                       packageType="monthly"
-                      amount={5000}
                       trigger={
                         <Button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-medium transition-all duration-300">
-                          Choose Monthly
+                          Request Free Consultation
                         </Button>
                       }
                     />

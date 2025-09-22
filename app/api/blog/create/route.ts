@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     };
     
     // Insert the blog post
-    const result = await db.collection('blogPosts').insertOne(blogPost);
+    const result = await db.collection('blog_posts').insertOne(blogPost);
     
     // Return the created blog post with its ID
     return NextResponse.json({

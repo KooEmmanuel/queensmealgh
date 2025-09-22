@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const { db } = await connectToDatabase(); // Get db object
     // Use db.collection().find() - ensure collection name matches ('socialMetrics' or 'socialmetrics')
-    const metricsCursor = db.collection('socialmetrics').find({})
+    const metricsCursor = db.collection('social_metrics').find({})
       // Note: .select() is a Mongoose helper, use .project() with native driver
       .project({ platform: 1, metricType: 1, value: 1, _id: 0 }) 
       .sort({ platform: 1, metricType: 1 });

@@ -34,7 +34,7 @@ export async function GET() {
       db.collection('featured_content').countDocuments().catch(() => 0),
       
       // Pricing subscriptions - handle case where collection might not exist
-      db.collection('pricingsubscriptions').find({}).toArray().catch(() => [])
+      db.collection('pricing_subscriptions').find({}).toArray().catch(() => [])
     ]);
 
     // Calculate total revenue from paid subscriptions

@@ -1,7 +1,7 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
-const MONGODB_DB = process.env.MONGODB_DB || 'queensmeeal';
+const MONGODB_DB = process.env.MONGODB_DB || 'queensmealgh';
 
 // Check if MongoDB URI is defined
 if (!MONGODB_URI) {

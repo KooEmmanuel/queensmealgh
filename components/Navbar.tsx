@@ -85,9 +85,6 @@ export default function Navbar() {
             <Link href="/contact" className="font-medium text-gray-600 hover:text-orange-500 transition-colors" onClick={toggleMobileMenu}>
               CONTACT
             </Link>
-            <Link href="/admin" className="font-medium text-gray-600 hover:text-orange-500 transition-colors" onClick={toggleMobileMenu}>
-              ADMIN
-            </Link>
           </nav>
         </div>
       )}

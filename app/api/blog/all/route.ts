@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const { db } = await connectToDatabase();
     
-    const blogPosts = await db.collection('blogPosts')
+    const blogPosts = await db.collection('blog_posts')
       .find({})
       .sort({ createdAt: -1 })
       .toArray();
