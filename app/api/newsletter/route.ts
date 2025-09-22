@@ -1,6 +1,20 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+export async function GET() {
+  try {
+    const { db } = await connectToDatabase();
+    const collection = db.collection('newsletter_subscriptions');
+    
+    const subscribers = await collection.find({}).toArray();
+    
+    return NextResponse.json(subscribers, { status: 200 });
+  } catch (error: any) {
+    console.error('Error fetching newsletter subscribers:', error);
+    return NextResponse.json({ message: 'Failed to fetch newsletter subscribers' }, { status: 500 });
+  }
+}
+
 // Basic email validation regex (more robust than client-side)
 const validateEmail = (email: string): boolean => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

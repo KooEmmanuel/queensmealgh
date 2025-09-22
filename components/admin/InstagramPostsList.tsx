@@ -180,20 +180,21 @@ export function InstagramPostsList() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Instagram Posts</CardTitle>
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+        <CardTitle className="text-lg sm:text-xl">Instagram Posts</CardTitle>
         <Button 
           variant="outline" 
           size="sm" 
           onClick={handleRefresh}
           disabled={loading}
+          className="w-full sm:w-auto"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <RefreshCw className="h-4 w-4" />
           )}
-          <span className="ml-2">Refresh</span>
+          <span className="ml-2 text-sm">Refresh</span>
         </Button>
       </CardHeader>
       <CardContent>
@@ -206,9 +207,9 @@ export function InstagramPostsList() {
         {posts.length === 0 ? (
           <p className="text-center text-gray-500 py-8">No Instagram posts found</p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {posts.map(post => (
-              <div key={post._id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg">
+              <div key={post._id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors">
                 <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 self-center sm:self-auto">
                   {post.thumbnail && post.thumbnail.startsWith('data:') ? (
                     <Image 
@@ -242,27 +243,29 @@ export function InstagramPostsList() {
                 </div>
                 <div className="flex items-center gap-2 w-full justify-end sm:w-auto sm:justify-start mt-2 sm:mt-0">
                   <Link href={post.postUrl} target="_blank" rel="noopener noreferrer">
-                    <Button size="icon" variant="outline">
-                      <ExternalLink className="h-4 w-4" />
+                    <Button size="icon" variant="outline" className="h-8 w-8 sm:h-9 sm:w-9">
+                      <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </Link>
                   <Button 
                     size="icon" 
                     variant="outline"
                     onClick={() => handleEdit(post)}
+                    className="h-8 w-8 sm:h-9 sm:w-9"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                   <Button 
                     size="icon" 
                     variant="destructive"
                     onClick={() => handleDelete(post._id)}
                     disabled={deleting === post._id}
+                    className="h-8 w-8 sm:h-9 sm:w-9"
                   >
                     {deleting === post._id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
                     ) : (
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     )}
                   </Button>
                 </div>

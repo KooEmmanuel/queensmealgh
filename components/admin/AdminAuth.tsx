@@ -6,15 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Loader2, Lock } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from "@/components/ui/use-toast";
 
-interface AdminAuthProps {
-  onAuthenticate: () => void;
-}
-
-export function AdminAuth({ onAuthenticate }: AdminAuthProps) {
+export function AdminAuth() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,17 +22,31 @@ export function AdminAuth({ onAuthenticate }: AdminAuthProps) {
     setError('');
     
     try {
-      // For demo purposes, using a simple password check
-      // In production, use a proper authentication system
-      if (password === 'admin123') {
-        setTimeout(() => {
-          onAuthenticate();
-        }, 1000);
+      // Simulate authentication delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const success = await login(password);
+      
+      if (success) {
+        toast({
+          title: "Authentication Successful",
+          description: "Welcome to the admin panel!",
+        });
       } else {
         setError('Invalid password');
+        toast({
+          title: "Authentication Failed",
+          description: "Invalid password. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       setError('Authentication failed');
+      toast({
+        title: "Authentication Error",
+        description: "An error occurred during authentication.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

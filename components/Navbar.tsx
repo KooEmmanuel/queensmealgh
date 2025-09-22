@@ -46,6 +46,9 @@ export default function Navbar() {
             <Link href="/blog" className="font-medium text-gray-600 hover:text-orange-500 transition-colors">
               BLOG
             </Link>
+            <Link href="/tiktok" className="font-medium text-gray-600 hover:text-orange-500 transition-colors">
+              TIKTOK
+            </Link>
             <Link href="/contact" className="font-medium text-gray-600 hover:text-orange-500 transition-colors">
               CONTACT
             </Link>
@@ -75,6 +78,9 @@ export default function Navbar() {
             </Link>
             <Link href="/blog" className="font-medium text-gray-600 hover:text-orange-500 transition-colors" onClick={toggleMobileMenu}>
               BLOG
+            </Link>
+            <Link href="/tiktok" className="font-medium text-gray-600 hover:text-orange-500 transition-colors" onClick={toggleMobileMenu}>
+              TIKTOK
             </Link>
             <Link href="/contact" className="font-medium text-gray-600 hover:text-orange-500 transition-colors" onClick={toggleMobileMenu}>
               CONTACT

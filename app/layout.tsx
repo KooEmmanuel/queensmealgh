@@ -1,6 +1,5 @@
 import type React from "react"
 import "@/app/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
 import { Montserrat, Playfair_Display, Source_Sans_3, Karla } from 'next/font/google'
 import { Toaster } from "@/components/ui/toaster"
 import Navbar from "@/components/Navbar"
@@ -45,12 +44,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable} ${playfair.variable} ${sourceSans.variable} ${karla.variable}`}>
       <body className={montserrat.className}>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            <Navbar />
-            <main className="flex-grow">
-              {children}
-            </main>
-          </ThemeProvider>
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
         <Toaster />
       </body>
     </html>

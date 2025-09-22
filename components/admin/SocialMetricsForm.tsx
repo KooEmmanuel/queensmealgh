@@ -21,12 +21,11 @@ interface MetricInputState {
 
 const METRIC_DEFINITIONS = [
   { platform: 'Instagram', metricType: 'Followers' },
-  { platform: 'Instagram', metricType: 'EngagementRate' }, // Example: Store as 2.5 for 2.5%
+  { platform: 'Instagram', metricType: 'EngagementRate' },
   { platform: 'TikTok', metricType: 'Followers' },
-  { platform: 'TikTok', metricType: 'TotalViews' }, // Example
+  { platform: 'TikTok', metricType: 'TotalViews' },
   { platform: 'YouTube', metricType: 'Subscribers' },
-  { platform: 'YouTube', metricType: 'TotalViews' }, // Example
-  // Add more platforms/metrics as needed (e.g., Facebook, X, LinkedIn)
+  { platform: 'YouTube', metricType: 'TotalViews' }
 ];
 
 export function SocialMetricsForm() {

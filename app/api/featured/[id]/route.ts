@@ -104,4 +104,42 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const id = resolvedParams.id;
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'ID parameter is required' },
+        { status: 400 }
+      );
+    }
+    
+    const { db } = await connectToDatabase();
+    
+    const result = await db.collection('featured_content').deleteOne({
+      _id: new ObjectId(id)
+    });
+    
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: 'Featured content not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting featured content:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete featured content' },
+      { status: 500 }
+    );
+  }
 } 

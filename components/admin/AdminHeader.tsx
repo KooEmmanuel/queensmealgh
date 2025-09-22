@@ -19,7 +19,7 @@ export function AdminHeader() {
     window.location.reload();
   };
 
-  const user = { name: "Admin User", email: "admin@example.com", avatarUrl: "" };
+  const user = { name: "Admin", email: "admin@queensmeal.com", avatarUrl: "" };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">

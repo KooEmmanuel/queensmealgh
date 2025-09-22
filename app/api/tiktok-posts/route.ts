@@ -16,16 +16,8 @@ export async function GET(request: Request) {
     // OR
     // 3. Implement a scraper (note: this might violate TikTok's terms of service)
     
-    // This is just placeholder data
-    const posts = [
-      {
-        id: '1',
-        thumbnail: '/images/placeholder-recipe.jpg',
-        title: 'Delicious Jollof Rice Recipe',
-        url: `https://www.tiktok.com/@${username}/video/1`
-      },
-      // Add more items as needed
-    ];
+    // Return empty array until TikTok integration is implemented
+    const posts: any[] = [];
     
     return NextResponse.json({ posts });
   } catch (error) {

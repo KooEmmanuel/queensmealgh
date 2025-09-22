@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Users, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { RecipeRating } from "@/components/RecipeRating";
 
 interface Recipe {
   _id: string;
@@ -158,7 +159,12 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
             </div>
           </div>
           
-          <div className="text-center">
+          {/* Rating Section */}
+          <div className="mt-12">
+            <RecipeRating recipeId={params.id} />
+          </div>
+          
+          <div className="text-center mt-8">
             <Link href="/recipes">
               <Button variant="outline" className="mr-4">
                 <ArrowLeft className="mr-2 h-4 w-4" />

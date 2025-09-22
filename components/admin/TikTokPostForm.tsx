@@ -68,53 +68,57 @@ export function TikTokPostForm() {
         <CardTitle>Add New TikTok Video</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="videoUrl">TikTok Video URL</Label>
+            <Label htmlFor="videoUrl" className="text-sm font-medium">TikTok Video URL</Label>
             <Input 
               id="videoUrl" 
               placeholder="https://www.tiktok.com/@queensmeal12/video/7123456789012345678" 
               value={formData.videoUrl}
               onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
               required
+              className="text-sm"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="text-sm font-medium">Title</Label>
             <Input 
               id="title" 
               placeholder="Enter video title..." 
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
               required
+              className="text-sm"
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <Label htmlFor="views">Views</Label>
+              <Label htmlFor="views" className="text-sm font-medium">Views</Label>
               <Input 
                 id="views" 
                 placeholder="e.g. 1.2K" 
                 value={formData.views}
                 onChange={(e) => setFormData({...formData, views: e.target.value})}
+                className="text-sm"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration</Label>
+              <Label htmlFor="duration" className="text-sm font-medium">Duration</Label>
               <Input 
                 id="duration" 
                 placeholder="e.g. 0:30" 
                 value={formData.duration}
                 onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                className="text-sm"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="image">Upload Thumbnail Image</Label>
+            <Label htmlFor="image" className="text-sm font-medium">Upload Thumbnail Image</Label>
             <ImageUploadPreview 
               onImageSelect={(file) => setFormData({...formData, image: file})}
             />
@@ -126,19 +130,19 @@ export function TikTokPostForm() {
               id="isPlayable"
               checked={formData.isPlayable}
               onChange={(e) => setFormData({...formData, isPlayable: e.target.checked})}
-              className="rounded border-gray-300"
+              className="rounded border-gray-300 h-4 w-4"
             />
-            <Label htmlFor="isPlayable">Is this video playable?</Label>
+            <Label htmlFor="isPlayable" className="text-sm">Is this video playable?</Label>
           </div>
           
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button type="submit" disabled={loading} className="w-full h-10 sm:h-11">
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Adding Video...
+                <span className="text-sm sm:text-base">Adding Video...</span>
               </>
             ) : (
-              'Add TikTok Video'
+              <span className="text-sm sm:text-base">Add TikTok Video</span>
             )}
           </Button>
         </form>

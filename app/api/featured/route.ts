@@ -13,8 +13,9 @@ export async function GET(request: Request) {
     
     if (!featuredItem) {
       return NextResponse.json({ 
-        error: 'No featured content found' 
-      }, { status: 404 });
+        featured: null,
+        message: 'No featured content found' 
+      }, { status: 200 });
     }
     
     return NextResponse.json(featuredItem);

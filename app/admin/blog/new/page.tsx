@@ -149,29 +149,29 @@ export default function NewBlogPostPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Top navigation bar */}
-      <div className="sticky top-0 z-10 border-b bg-white px-4 sm:px-6">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/admin/blog" className="mr-4">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
+      <div className="sticky top-0 z-10 border-b bg-white px-3 sm:px-4 lg:px-6">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
+          <div className="flex items-center min-w-0 flex-1">
+            <Link href="/admin/blog" className="mr-2 sm:mr-4 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
-            <div className="flex items-center">
-              <Avatar className="h-8 w-8 mr-2">
+            <div className="flex items-center min-w-0">
+              <Avatar className="h-6 w-6 sm:h-8 sm:w-8 mr-2 flex-shrink-0">
                 <AvatarImage src={author.avatar} alt={author.name} />
-                <AvatarFallback>{author.name[0]}</AvatarFallback>
+                <AvatarFallback className="text-xs sm:text-sm">{author.name[0]}</AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium">{author.name}</span>
+              <span className="text-xs sm:text-sm font-medium truncate">{author.name}</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  {category}
-                  <ChevronDown className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="flex items-center gap-1 h-8 px-2 sm:h-9 sm:px-3">
+                  <span className="text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">{category}</span>
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -196,17 +196,17 @@ export default function NewBlogPostPage() {
             <Button 
               onClick={handleSave}
               disabled={isSubmitting}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white h-8 px-3 sm:h-9 sm:px-4"
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-                  Saving...
+                  <div className="animate-spin h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 border-2 border-white border-t-transparent rounded-full" />
+                  <span className="text-xs sm:text-sm">Saving...</span>
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Publish
+                  <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="text-xs sm:text-sm">Publish</span>
                 </>
               )}
             </Button>
@@ -215,10 +215,10 @@ export default function NewBlogPostPage() {
       </div>
       
       {/* Main content area */}
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-3 sm:px-4 py-4 sm:py-6 lg:px-8 lg:py-8">
         {/* Cover image section */}
         {coverImage ? (
-          <div className="relative mb-8 rounded-lg overflow-hidden">
+          <div className="relative mb-6 sm:mb-8 rounded-lg overflow-hidden">
             <div className="aspect-[2/1] w-full">
               <Image 
                 src={coverImage} 
@@ -230,21 +230,21 @@ export default function NewBlogPostPage() {
             <Button 
               variant="destructive" 
               size="sm" 
-              className="absolute top-4 right-4"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 h-8 w-8 sm:h-9 sm:w-9"
               onClick={removeCoverImage}
             >
-              <X className="h-4 w-4" />
+              <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         ) : (
-          <div className="mb-8 rounded-lg border-2 border-dashed border-gray-200 p-12 text-center">
-            <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <div className="mt-4 flex text-sm leading-6 text-gray-600">
+          <div className="mb-6 sm:mb-8 rounded-lg border-2 border-dashed border-gray-200 p-6 sm:p-8 lg:p-12 text-center">
+            <ImageIcon className="mx-auto h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400" />
+            <div className="mt-3 sm:mt-4 flex text-sm leading-6 text-gray-600">
               <label
                 htmlFor="cover-upload"
                 className="relative cursor-pointer rounded-md bg-white font-semibold text-green-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-green-600 focus-within:ring-offset-2 hover:text-green-500"
               >
-                <span>Upload a cover image</span>
+                <span className="text-sm sm:text-base">Upload a cover image</span>
                 <input
                   id="cover-upload"
                   name="cover-upload"
@@ -255,7 +255,7 @@ export default function NewBlogPostPage() {
                 />
               </label>
             </div>
-            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+            <p className="text-xs leading-5 text-gray-600 mt-1">PNG, JPG, GIF up to 10MB</p>
           </div>
         )}
         
@@ -266,15 +266,17 @@ export default function NewBlogPostPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
-          className="w-full border-none text-4xl font-bold focus:outline-none focus:ring-0 mb-8"
+          className="w-full border-none text-2xl sm:text-3xl lg:text-4xl font-bold focus:outline-none focus:ring-0 mb-6 sm:mb-8"
         />
         
         {/* Editor.js */}
-        <Editor 
-          data={editorData}
-          onChange={setEditorData}
-          placeholder="Start writing your blog post..."
-        />
+        <div className="min-h-[400px]">
+          <Editor 
+            data={editorData}
+            onChange={setEditorData}
+            placeholder="Start writing your blog post..."
+          />
+        </div>
       </div>
     </div>
   );

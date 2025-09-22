@@ -106,7 +106,7 @@ export default function ContactForm() {
   };
   
   return (
-    <section className="relative py-16 overflow-hidden">
+    <section className="relative py-16 overflow-hidden bg-green-50">
       {/* Animated curvy lines - top */}
       <div className="absolute top-0 left-0 w-full overflow-hidden">
         <svg 

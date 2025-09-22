@@ -29,9 +29,7 @@ export async function GET(request: Request) {
       let sort: any = { createdAt: -1 }; // Default sort by newest
       
       // Apply category filters
-      if (category === '3') { // African
-        query.title = { $regex: 'african|jollof|egusi|fufu', $options: 'i' };
-      } else if (category === '4') { // Breakfast
+      if (category === '4') { // Breakfast
         query.title = { $regex: 'breakfast|morning|akara|pap', $options: 'i' };
       } else if (category === '5') { // Dinner
         query.title = { $regex: 'dinner|evening|soup|stew', $options: 'i' };
@@ -46,7 +44,7 @@ export async function GET(request: Request) {
       const videos = await db.collection('tiktok_videos')
         .find(query)
         .sort(sort)
-        .limit(6) // Limit to 6 videos
+        .limit(8) // Limit to 8 videos
         .toArray();
       
       console.log(`Found ${videos.length} TikTok videos for category ${category}`);

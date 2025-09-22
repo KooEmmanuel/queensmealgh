@@ -39,15 +39,16 @@ export function ImageUploadPreview({ onImageSelect, initialImage }: ImageUploadP
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <Button 
           type="button" 
           variant="outline" 
           onClick={() => fileInputRef.current?.click()}
+          className="w-full sm:w-auto h-9 sm:h-10"
         >
           <Upload className="h-4 w-4 mr-2" />
-          Select Image
+          <span className="text-sm">Select Image</span>
         </Button>
         
         <input 
@@ -64,6 +65,7 @@ export function ImageUploadPreview({ onImageSelect, initialImage }: ImageUploadP
             variant="outline" 
             size="icon"
             onClick={handleClearImage}
+            className="h-9 w-9 sm:h-10 sm:w-10"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -71,7 +73,7 @@ export function ImageUploadPreview({ onImageSelect, initialImage }: ImageUploadP
       </div>
       
       {preview && (
-        <div className="relative w-full h-40 mt-4 border rounded-md overflow-hidden">
+        <div className="relative w-full h-32 sm:h-40 mt-3 sm:mt-4 border rounded-md overflow-hidden bg-gray-50">
           <Image 
             src={preview} 
             alt="Preview" 

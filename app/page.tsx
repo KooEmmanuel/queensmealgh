@@ -36,15 +36,17 @@ function FeaturedSection() {
         const response = await fetch('/api/featured');
         
         if (!response.ok) {
-          if (response.status === 404) {
-            // No featured content yet
-            setFeatured(null);
-            return;
-          }
           throw new Error('Failed to fetch featured content');
         }
         
         const data = await response.json();
+        
+        // Handle the case where no featured content exists
+        if (data.featured === null) {
+          setFeatured(null);
+          return;
+        }
+        
         setFeatured(data);
       } catch (err) {
         console.error('Error fetching featured content:', err);
@@ -208,15 +210,18 @@ function CookingJournalSection() {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <HeroSection />
+
+      {/* Services Section */}
+      <ServicesSection />
 
       {/* Contact Form */}
       <ContactForm />
 
       {/* Popular Recipes Section */}
-      <section className="py-12 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+      <section className="py-12 bg-gray-50 overflow-hidden">
         <PopularRecipesScroll />
       </section>
 
@@ -227,8 +232,6 @@ export default function Home() {
           <InstagramFollowSection />
         </div>
       </section>
-  {/* ADD Services Section here */}
-  <ServicesSection />
       {/* Features Section */}
       <section className="container mx-auto px-4 md:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

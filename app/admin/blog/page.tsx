@@ -300,34 +300,34 @@ export default function BlogManagementPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center">
+    <div className="p-3 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto">
           <Link href="/admin">
-            <Button variant="ghost" size="sm" className="mr-4">
+            <Button variant="ghost" size="sm" className="mb-2 sm:mb-0 sm:mr-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Blog Management</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Blog Management</h1>
         </div>
-        <Link href="/admin/blog/new">
-          <Button className="flex items-center gap-2">
+        <Link href="/admin/blog/new" className="w-full sm:w-auto">
+          <Button className="flex items-center gap-2 w-full sm:w-auto h-10">
             <Plus className="h-4 w-4" />
-            Add New Post
+            <span className="text-sm sm:text-base">Add New Post</span>
           </Button>
         </Link>
       </div>
       
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">All Blog Posts</h2>
-          <div className="relative w-64">
+      <div className="bg-white rounded-lg shadow p-3 sm:p-6 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
+          <h2 className="text-base sm:text-lg font-semibold">All Blog Posts</h2>
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <Input
               type="text"
               placeholder="Search posts..."
-              className="pl-9"
+              className="pl-9 text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -337,40 +337,86 @@ export default function BlogManagementPage() {
         {loading ? (
           <div className="py-8 text-center">
             <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading blog posts...</p>
+            <p className="text-gray-500 text-sm">Loading blog posts...</p>
           </div>
         ) : filteredPosts.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-sm">
               {searchTerm ? 'No posts match your search' : 'No blog posts found'}
             </p>
             {searchTerm && (
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="mt-2"
+                className="mt-2 h-8"
                 onClick={() => setSearchTerm('')}
               >
-                Clear Search
+                <span className="text-xs sm:text-sm">Clear Search</span>
               </Button>
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPosts.map((post: BlogPost) => (
-                  <TableRow key={post._id}>
-                    <TableCell>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Image</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredPosts.map((post: BlogPost) => (
+                    <TableRow key={post._id}>
+                      <TableCell>
+                        {post.coverImage ? (
+                          <Image
+                            src={post.coverImage}
+                            alt={post.title}
+                            width={60}
+                            height={40}
+                            className="object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-[60px] h-[40px] bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                            No Image
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">{post.title}</TableCell>
+                      <TableCell>{post.category}</TableCell>
+                      <TableCell>{new Date(post.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/admin/blog/edit/${post._id}`}>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDelete(post._id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {filteredPosts.map((post: BlogPost) => (
+                <div key={post._id} className="border rounded-lg p-4 bg-white">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
                       {post.coverImage ? (
                         <Image
                           src={post.coverImage}
@@ -384,11 +430,13 @@ export default function BlogManagementPage() {
                           No Image
                         </div>
                       )}
-                    </TableCell>
-                    <TableCell>{post.title}</TableCell>
-                    <TableCell>{post.category}</TableCell>
-                    <TableCell>{new Date(post.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-sm sm:text-base text-gray-900 truncate">{post.title}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{post.category}</p>
+                      <p className="text-xs text-gray-400 mt-1">{new Date(post.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
                       <Link href={`/admin/blog/edit/${post._id}`}>
                         <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
                           <Pencil className="h-4 w-4" />
@@ -398,67 +446,70 @@ export default function BlogManagementPage() {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleDelete(post._id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{isEditing ? 'Edit Blog Post' : 'Create New Blog Post'}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">{isEditing ? 'Edit Blog Post' : 'Create New Blog Post'}</DialogTitle>
+            <DialogDescription className="text-sm">
               {isEditing 
                 ? 'Update your blog post details below' 
                 : 'Fill in the details to create a new blog post'}
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
+                  <label className="block text-sm font-medium mb-2">Title</label>
                   <Input
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="Enter post title"
                     required
+                    className="text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <label className="block text-sm font-medium mb-2">Category</label>
                   <Input
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
                     placeholder="E.g., Recipes, Tips, News"
+                    className="text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Excerpt</label>
+                  <label className="block text-sm font-medium mb-2">Excerpt</label>
                   <Textarea
                     name="excerpt"
                     value={formData.excerpt}
                     onChange={handleInputChange}
                     placeholder="Brief summary of the post"
                     rows={3}
+                    className="text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Author Name</label>
+                  <label className="block text-sm font-medium mb-2">Author Name</label>
                   <Input
                     name="authorName"
                     value={formData.author.name}
@@ -467,14 +518,15 @@ export default function BlogManagementPage() {
                       author: { ...prev.author, name: e.target.value } 
                     }))}
                     placeholder="Author name"
+                    className="text-sm"
                   />
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Featured Image</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <label className="block text-sm font-medium mb-2">Featured Image</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 sm:p-4 text-center relative">
                     {imagePreview ? (
                       <div className="relative">
                         <Image
@@ -482,7 +534,7 @@ export default function BlogManagementPage() {
                           alt="Preview"
                           width={300}
                           height={200}
-                          className="mx-auto object-cover rounded"
+                          className="mx-auto object-cover rounded max-w-full h-auto"
                         />
                         <button
                           type="button"
@@ -490,15 +542,15 @@ export default function BlogManagementPage() {
                             setImagePreview(null);
                             setFormData(prev => ({ ...prev, imageUrl: '' }));
                           }}
-                          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow"
+                          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow h-6 w-6"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3 w-3" />
                         </button>
                       </div>
                     ) : (
                       <div>
-                        <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">
+                        <Upload className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-gray-400 mb-2" />
+                        <p className="text-xs sm:text-sm text-gray-500">
                           Drag & drop an image or click to browse
                         </p>
                         <input
@@ -512,23 +564,23 @@ export default function BlogManagementPage() {
                   </div>
                 </div>
                 
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-col sm:flex-row gap-2 mb-4">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={generateContent}
                     disabled={isGenerating || !formData.title}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 h-10"
                   >
                     {isGenerating ? (
                       <>
                         <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                        Generating...
+                        <span className="text-sm">Generating...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4" />
-                        Generate Content
+                        <span className="text-sm">Generate Content</span>
                       </>
                     )}
                   </Button>
@@ -538,15 +590,15 @@ export default function BlogManagementPage() {
                     variant="outline"
                     onClick={() => generateImage(formData.title)}
                     disabled={isGenerating || !formData.title}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 h-10"
                   >
                     <ImageIcon className="h-4 w-4" />
-                    Generate Image
+                    <span className="text-sm">Generate Image</span>
                   </Button>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Content</label>
+                  <label className="block text-sm font-medium mb-2">Content</label>
                   <div className="border rounded-md">
                     <RichTextEditor
                       value={formData.content}
@@ -564,27 +616,28 @@ export default function BlogManagementPage() {
               </div>
             </div>
             
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsDialogOpen(false)}
                 disabled={isSubmitting}
+                className="h-10"
               >
-                Cancel
+                <span className="text-sm">Cancel</span>
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 h-10"
               >
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
-                    {isEditing ? 'Updating...' : 'Creating...'}
+                    <span className="text-sm">{isEditing ? 'Updating...' : 'Creating...'}</span>
                   </>
                 ) : (
-                  <>{isEditing ? 'Update Post' : 'Create Post'}</>
+                  <span className="text-sm">{isEditing ? 'Update Post' : 'Create Post'}</span>
                 )}
               </Button>
             </div>

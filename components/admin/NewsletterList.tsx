@@ -43,7 +43,7 @@ export function NewsletterList() {
     return (
       <div className="flex justify-center items-center py-10">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-        <span className="ml-2">Loading Subscriptions...</span>
+        <span className="ml-2 text-sm sm:text-base">Loading Subscriptions...</span>
       </div>
     );
   }
@@ -52,36 +52,60 @@ export function NewsletterList() {
     return (
       <div className="flex justify-center items-center py-10 text-red-600">
         <AlertTriangle className="h-6 w-6 mr-2" />
-        <span>{error}</span>
+        <span className="text-sm sm:text-base">{error}</span>
       </div>
     );
   }
 
   if (subscriptions.length === 0) {
-    return <p className="text-center text-gray-500 py-10">No newsletter subscriptions yet.</p>;
+    return <p className="text-center text-gray-500 py-10 text-sm sm:text-base">No newsletter subscriptions yet.</p>;
   }
 
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-4">Newsletter Subscribers ({subscriptions.length})</h3>
-      <ScrollArea className="h-[400px] border rounded-md"> {/* Added ScrollArea */}
-        <Table>
-          <TableHeader className="sticky top-0 bg-gray-50 z-10"> {/* Sticky header */}
-            <TableRow>
-              <TableHead className="w-[60%]">Email Address</TableHead>
-              <TableHead>Subscribed On</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {subscriptions.map((sub) => (
-              <TableRow key={sub._id}>
-                <TableCell className="font-medium">{sub.email}</TableCell>
-                <TableCell>{new Date(sub.subscribedAt).toLocaleDateString()}</TableCell>
+      <h3 className="text-lg sm:text-xl font-semibold mb-4">Newsletter Subscribers ({subscriptions.length})</h3>
+      
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <ScrollArea className="h-[400px] border rounded-md">
+          <Table>
+            <TableHeader className="sticky top-0 bg-gray-50 z-10">
+              <TableRow>
+                <TableHead className="w-[60%]">Email Address</TableHead>
+                <TableHead>Subscribed On</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+            </TableHeader>
+            <TableBody>
+              {subscriptions.map((sub) => (
+                <TableRow key={sub._id}>
+                  <TableCell className="font-medium">{sub.email}</TableCell>
+                  <TableCell>{new Date(sub.subscribedAt).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden">
+        <div className="space-y-3 max-h-[400px] overflow-y-auto border rounded-md p-3">
+          {subscriptions.map((sub) => (
+            <div key={sub._id} className="border rounded-lg p-3 sm:p-4 bg-white">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm sm:text-base text-gray-900 break-all">{sub.email}</p>
+                </div>
+                <div className="flex-shrink-0">
+                  <span className="text-xs sm:text-sm text-gray-500">
+                    {new Date(sub.subscribedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 } 

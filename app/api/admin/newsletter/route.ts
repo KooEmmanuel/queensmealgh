@@ -5,7 +5,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 // to ensure only logged-in admins can access this data.
 
 export async function GET(request: Request) {
-  // Example: Check for an admin session or token before proceeding
+  // TODO: Add admin authentication check
   // const isAdmin = await checkAdminAuth(request);
   // if (!isAdmin) {
   //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

@@ -53,16 +53,37 @@ export async function GET(request: Request) {
 // POST - Add a new TikTok video
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const videoUrl = formData.get('videoUrl') as string;
-    const title = formData.get('title') as string;
-    const views = formData.get('views') as string;
-    const duration = formData.get('duration') as string;
-    const isPlayable = formData.get('isPlayable') === 'true';
+    // Check content type and handle both JSON and FormData
+    const contentType = request.headers.get('content-type') || '';
+    
+    let videoUrl: string;
+    let title: string;
+    let views: string;
+    let duration: string;
+    let isPlayable: boolean;
+    let image: File | null = null;
+    
+    if (contentType.includes('application/json')) {
+      // Handle JSON request
+      const body = await request.json();
+      videoUrl = body.videoUrl;
+      title = body.title;
+      views = body.views || '0';
+      duration = body.duration || '0:00';
+      isPlayable = body.isPlayable !== false;
+    } else {
+      // Handle FormData request
+      const formData = await request.formData();
+      videoUrl = formData.get('videoUrl') as string;
+      title = formData.get('title') as string;
+      views = formData.get('views') as string;
+      duration = formData.get('duration') as string;
+      isPlayable = formData.get('isPlayable') === 'true';
+      image = formData.get('image') as File;
+    }
     
     // Handle image upload
     let thumbnailBase64 = '';
-    const image = formData.get('image') as File;
     
     if (image) {
       // Convert image to base64
@@ -97,20 +118,52 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE - Remove a TikTok video
+// DELETE - Remove TikTok video(s)
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const ids = searchParams.get('ids'); // For bulk delete
     
+    const { db } = await connectToDatabase();
+    
+    // Handle bulk delete
+    if (ids) {
+      try {
+        const idArray = ids.split(',').map(id => id.trim()).filter(id => id);
+        
+        if (idArray.length === 0) {
+          return NextResponse.json(
+            { error: 'No valid IDs provided' },
+            { status: 400 }
+          );
+        }
+        
+        const objectIds = idArray.map(id => new ObjectId(id));
+        const result = await db.collection('tiktok_videos').deleteMany({
+          _id: { $in: objectIds }
+        });
+        
+        return NextResponse.json({ 
+          success: true, 
+          deletedCount: result.deletedCount,
+          message: `Successfully deleted ${result.deletedCount} video(s)`
+        });
+      } catch (parseError) {
+        return NextResponse.json(
+          { error: 'Invalid ID format for bulk delete' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    // Handle single delete
     if (!id) {
       return NextResponse.json(
         { error: 'Video ID is required' },
         { status: 400 }
       );
     }
-    
-    const { db } = await connectToDatabase();
     
     const result = await db.collection('tiktok_videos').deleteOne({
       _id: new ObjectId(id)
@@ -125,9 +178,9 @@ export async function DELETE(request: Request) {
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting TikTok video:', error);
+    console.error('Error deleting TikTok video(s):', error);
     return NextResponse.json(
-      { error: 'Failed to delete TikTok video' },
+      { error: 'Failed to delete TikTok video(s)' },
       { status: 500 }
     );
   }

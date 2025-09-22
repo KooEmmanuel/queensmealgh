@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Play, Eye, Clock } from "lucide-react";
+import { ExternalLink, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 
 interface TikTokVideo {
   _id: string;
@@ -106,7 +107,7 @@ export function TikTokFeed() {
   return (
     <div className="w-full">
       
-      {/* Category pills for filtering */}
+      {/* Modern Category pills for filtering */}
       <div className="mb-8">
         <CategoryPills 
           activeCategory={activeCategory} 
@@ -114,51 +115,60 @@ export function TikTokFeed() {
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {videos.map((video) => (
-          <Card key={video._id} className="overflow-hidden flex flex-col h-full shadow-sm hover:shadow-md transition-shadow duration-200">
-            <CardHeader className="p-3">
-              <CardTitle className="text-base font-semibold leading-tight line-clamp-2">
-                {video.title || "TikTok Video"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 relative aspect-video flex-grow">
-              {video.thumbnail ? (
-                <Image
-                  src={video.thumbnail}
-                  alt={video.title || "TikTok video thumbnail"}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white font-bold">
-                  TT
-                </div>
-              )}
-              {video.isPlayable && (
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Play className="h-12 w-12 text-white/80" />
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="p-3 flex justify-between items-center text-xs text-gray-600 bg-gray-50/50">
-              <div className="flex items-center gap-2">
-                <Eye className="h-3 w-3" />
-                <span>{video.views || 'N/A'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-3 w-3" />
-                <span>{video.duration || 'N/A'}</span>
-              </div>
-              <Link href={video.videoUrl} target="_blank" rel="noopener noreferrer" passHref>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  <span className="sr-only">View on TikTok</span>
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
+      {/* Modern Grid Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {videos.map((video, index) => (
+          <motion.div
+            key={video._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className="group"
+          >
+            <Card className="overflow-hidden flex flex-col h-full bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 rounded-2xl">
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-base font-semibold leading-tight line-clamp-2 text-gray-800 group-hover:text-green-600 transition-colors">
+                  {video.title || "TikTok Video"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 relative aspect-video flex-grow">
+                {video.thumbnail ? (
+                  <Image
+                    src={video.thumbnail}
+                    alt={video.title || "TikTok video thumbnail"}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white font-bold text-2xl">
+                    TT
+                  </div>
+                )}
+                {video.isPlayable && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                      <Play className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                )}
+                {/* Modern overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </CardContent>
+              <CardFooter className="p-4 pt-2 flex justify-center items-center text-xs text-gray-600 bg-gradient-to-r from-gray-50/50 to-white/50">
+                <Link href={video.videoUrl} target="_blank" rel="noopener noreferrer" passHref>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-full bg-green-500/10 hover:bg-green-500/20 text-green-600 hover:text-green-700 transition-all duration-200"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="sr-only">View on TikTok</span>
+                  </Button>
+                </Link>
+              </CardFooter>
+            </Card>
+          </motion.div>
         ))}
       </div>
     </div>
@@ -190,20 +200,21 @@ export function CategoryPills({ activeCategory, onCategoryChange }: CategoryPill
         ref={scrollRef}
         className="flex overflow-x-auto pb-2 scrollbar-hide snap-x"
       >
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           {categories.map(category => (
-            <Badge 
+            <motion.button
               key={category.id}
-              variant={activeCategory === category.id ? "default" : "outline"}
-              className={`px-4 py-2 cursor-pointer whitespace-nowrap font-karla ${
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`px-6 py-3 cursor-pointer whitespace-nowrap font-karla rounded-full transition-all duration-300 ${
                 activeCategory === category.id 
-                  ? 'bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-green-50 hover:text-green-600 border-gray-200'
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/25' 
+                  : 'bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-green-50 hover:text-green-600 border border-gray-200/50 hover:border-green-200 shadow-sm hover:shadow-md'
               }`}
               onClick={() => onCategoryChange(category.id)}
             >
               {category.name}
-            </Badge>
+            </motion.button>
           ))}
         </div>
       </div>

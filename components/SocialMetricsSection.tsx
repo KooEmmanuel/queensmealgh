@@ -88,19 +88,19 @@ export function SocialMetricsSection() {
   // Prepare data for display
   const displayMetrics: DisplayMetric[] = [
     { platform: 'Instagram', icon: <Instagram className="h-8 w-8 text-pink-500" />, value: metrics?.Instagram?.Followers ?? null, label: 'Followers' },
-    { platform: 'TikTok', icon: <FaTiktok className="h-8 w-8 text-black dark:text-white" />, value: metrics?.TikTok?.Followers ?? null, label: 'Followers' },
+    { platform: 'TikTok', icon: <FaTiktok className="h-8 w-8 text-black" />, value: metrics?.TikTok?.Followers ?? null, label: 'Followers' },
     { platform: 'YouTube', icon: <Youtube className="h-8 w-8 text-red-600" />, value: metrics?.YouTube?.Subscribers ?? null, label: 'Subscribers' },
     // Add more metrics if needed, e.g., YouTube Views
     // { platform: 'YouTube', icon: <Youtube className="h-8 w-8 text-red-600" />, value: metrics?.YouTube?.TotalViews ?? null, label: 'Total Views' },
   ];
 
   return (
-    <section className="py-12 md:py-20 bg-gradient-to-br from-orange-50 via-white to-green-50 dark:from-gray-900 dark:via-black dark:to-green-900/30">
+    <section className="py-12 md:py-20 bg-gradient-to-br from-orange-50 via-white to-green-50">
       <div className="container mx-auto px-4 md:px-6 text-center">
-        <h2 className="text-3xl font-bold tracking-tight mb-4 text-gray-900 dark:text-white">
+        <h2 className="text-3xl font-bold tracking-tight mb-4 text-gray-900">
           Join Our Community
         </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
           Connect with us and thousands of food lovers across your favorite platforms!
         </p>
 
@@ -117,7 +117,7 @@ export function SocialMetricsSection() {
           </div>
         ) : error ? (
           // Error Message
-          <div className="text-red-500 dark:text-red-400">{error}</div>
+            <div className="text-red-500">{error}</div>
         ) : (
           // Display Metrics with Animation
           <motion.div
@@ -134,10 +134,10 @@ export function SocialMetricsSection() {
                 whileHover={{ scale: 1.08, y: -5 }} // Hover animation
               >
                 <div className="mb-3">{metric.icon}</div>
-                <span className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                <span className="text-3xl md:text-4xl font-bold text-gray-900">
                   {formatNumber(metric.value)}
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">
+                <span className="text-sm text-gray-500 uppercase tracking-wider mt-1">
                   {metric.label}
                 </span>
               </motion.div>

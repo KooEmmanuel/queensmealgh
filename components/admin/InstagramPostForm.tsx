@@ -72,31 +72,33 @@ export function InstagramPostForm() {
         <CardTitle>Add New Instagram Post</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="postUrl">Instagram Post URL</Label>
+            <Label htmlFor="postUrl" className="text-sm font-medium">Instagram Post URL</Label>
             <Input 
               id="postUrl" 
               placeholder="https://www.instagram.com/queensmeal12/reel/DId5_uLNRlr/" 
               value={formData.postUrl}
               onChange={(e) => setFormData({...formData, postUrl: e.target.value})}
               required
+              className="text-sm"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="caption">Caption</Label>
+            <Label htmlFor="caption" className="text-sm font-medium">Caption</Label>
             <Textarea 
               id="caption" 
               placeholder="Enter post caption..." 
               value={formData.caption}
               onChange={(e) => setFormData({...formData, caption: e.target.value})}
               required
+              className="text-sm min-h-[100px] sm:min-h-[120px]"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="image">Upload Thumbnail Image</Label>
+            <Label htmlFor="image" className="text-sm font-medium">Upload Thumbnail Image</Label>
             <ImageUploadPreview 
               onImageSelect={(file) => setFormData({...formData, image: file})}
             />
@@ -108,19 +110,19 @@ export function InstagramPostForm() {
               id="isPlayable"
               checked={formData.isPlayable}
               onChange={(e) => setFormData({...formData, isPlayable: e.target.checked})}
-              className="rounded border-gray-300"
+              className="rounded border-gray-300 h-4 w-4"
             />
-            <Label htmlFor="isPlayable">Is this a video/reel?</Label>
+            <Label htmlFor="isPlayable" className="text-sm">Is this a video/reel?</Label>
           </div>
           
-          <Button type="submit" disabled={loading} className="w-full">
+          <Button type="submit" disabled={loading} className="w-full h-10 sm:h-11">
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Adding Post...
+                <span className="text-sm sm:text-base">Adding Post...</span>
               </>
             ) : (
-              'Add Instagram Post'
+              <span className="text-sm sm:text-base">Add Instagram Post</span>
             )}
           </Button>
         </form>

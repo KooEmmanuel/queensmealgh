@@ -13,7 +13,6 @@ export function getCategories() {
   return [
     { id: '1', name: 'Popular' },
     { id: '2', name: 'Recent' },
-    { id: '3', name: 'African' },
     { id: '4', name: 'Breakfast' },
     { id: '5', name: 'Dinner' },
   ];
