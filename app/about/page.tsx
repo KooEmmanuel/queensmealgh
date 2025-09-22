@@ -64,29 +64,6 @@ export default function AboutPage() {
     fetchStatistics();
   }, []);
 
-  const teamMembers = [
-    {
-      name: "Chef Sarah Mensah",
-      role: "Founder & Head Chef",
-      image: "/images/person.png",
-      bio: "Passionate about bringing authentic African flavors to the world, Chef Sarah has over 15 years of culinary experience.",
-      specialties: ["African Cuisine", "Traditional Recipes", "Food Innovation"]
-    },
-    {
-      name: "Kwame Asante",
-      role: "Content Director",
-      image: "/images/person.png",
-      bio: "Creative storyteller who brings our recipes to life through engaging content and beautiful visuals.",
-      specialties: ["Content Creation", "Food Photography", "Social Media"]
-    },
-    {
-      name: "Ama Osei",
-      role: "Community Manager",
-      image: "/images/person.png",
-      bio: "Building connections and fostering a vibrant community of food lovers and home cooks.",
-      specialties: ["Community Building", "Customer Relations", "Event Planning"]
-    }
-  ];
 
   const values = [
     {
@@ -111,33 +88,6 @@ export default function AboutPage() {
     }
   ];
 
-  const milestones = [
-    {
-      year: "2020",
-      title: "Queens Meal Founded",
-      description: "Started as a passion project to share authentic African recipes with the world."
-    },
-    {
-      year: "2021",
-      title: "10K Followers",
-      description: "Reached our first major milestone with a growing community of food enthusiasts."
-    },
-    {
-      year: "2022",
-      title: "Recipe Platform Launch",
-      description: "Launched our comprehensive recipe platform with step-by-step cooking guides."
-    },
-    {
-      year: "2023",
-      title: "100K+ Community",
-      description: "Built a thriving community of over 100,000 food lovers across social media platforms."
-    },
-    {
-      year: "2024",
-      title: "Global Expansion",
-      description: "Expanded our reach globally, bringing African cuisine to kitchens worldwide."
-    }
-  ];
 
   // Format numbers for display
   const formatNumber = (num: number): string => {
@@ -331,110 +281,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Meet Our Team
-              </h2>
-              <p className="text-xl text-gray-600">
-                The passionate people behind Queens Meal
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {teamMembers.map((member, index) => (
-                <motion.div
-                  key={member.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Card className="h-full text-center hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="relative w-32 h-32 mx-auto mb-4">
-                        <Image
-                          src={member.image}
-                          alt={member.name}
-                          fill
-                          className="rounded-full object-cover"
-                        />
-                      </div>
-                      <CardTitle className="text-xl text-gray-900">
-                        {member.name}
-                      </CardTitle>
-                      <CardDescription className="text-orange-500 font-medium">
-                        {member.role}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4 leading-relaxed">
-                        {member.bio}
-                      </p>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        {member.specialties.map((specialty) => (
-                          <Badge key={specialty} variant="secondary" className="text-xs">
-                            {specialty}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Journey Timeline */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Our Journey
-              </h2>
-              <p className="text-xl text-gray-600">
-                Key milestones in our growth and impact
-              </p>
-            </div>
-            
-            <div className="space-y-8">
-              {milestones.map((milestone, index) => (
-                <motion.div
-                  key={milestone.year}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className={`flex items-center ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}
-                >
-                  <div className="flex-1">
-                    <Card className={`${index % 2 === 0 ? 'mr-8' : 'ml-8'} hover:shadow-lg transition-shadow`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4 mb-3">
-                          <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                            {milestone.year}
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900">
-                            {milestone.title}
-                          </h3>
-                        </div>
-                        <p className="text-gray-600 leading-relaxed">
-                          {milestone.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div className="w-4 h-4 bg-orange-500 rounded-full flex-shrink-0" />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials Section */}
       <section className="py-20 bg-white">
