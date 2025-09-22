@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
-// POST - Add a comment to a discussion
+// POST - Add a comment to a thread
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { discussionId, content, author } = body;
+    const { threadId, content, authorId } = body;
     
-    if (!discussionId || !content || !author) {
+    if (!threadId || !content || !authorId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -17,27 +17,43 @@ export async function POST(request: Request) {
     
     const { db } = await connectToDatabase();
     
-    const comment = {
-      _id: new ObjectId(),
-      content,
-      author,
-      createdAt: new Date(),
-      likes: 0
-    };
+    // Check if user exists
+    const user = await db.collection('community_users').findOne({
+      _id: new ObjectId(authorId)
+    });
     
-    const result = await db.collection('discussions').updateOne(
-      { _id: new ObjectId(discussionId) },
-      { $push: { comments: comment } }
-    );
-    
-    if (result.matchedCount === 0) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Discussion not found' },
+        { error: 'User not found' },
         { status: 404 }
       );
     }
     
-    return NextResponse.json(comment, { status: 201 });
+    const comment = {
+      _id: new ObjectId(),
+      content,
+      author: user.username,
+      authorId: new ObjectId(authorId),
+      createdAt: new Date(),
+      likes: 0
+    };
+    
+    const result = await db.collection('threads').updateOne(
+      { _id: new ObjectId(threadId) },
+      { 
+        $push: { comments: comment },
+        $inc: { comments: 1 }
+      }
+    );
+    
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: 'Thread not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({ success: true, comment }, { status: 201 });
   } catch (error) {
     console.error('Error adding comment:', error);
     return NextResponse.json(

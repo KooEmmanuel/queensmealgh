@@ -237,17 +237,17 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
 
     return (
       <Card className="w-full">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
               <AvatarImage src={currentUser.avatar} alt={currentUser.displayName} />
-              <AvatarFallback className="bg-green-100 text-green-800">
+              <AvatarFallback className="bg-green-100 text-green-800 text-sm sm:text-base">
                 {currentUser.displayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                 <h3 className="font-semibold text-gray-900 truncate">
                   {currentUser.displayName}
                 </h3>
@@ -256,7 +256,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
                 )}
               </div>
               
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
                 <Badge className={`${reputationBadge.color} text-xs`}>
                   <BadgeIcon className="h-3 w-3 mr-1" />
                   {reputationBadge.text}
@@ -271,24 +271,24 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 shrink-0"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
           
           <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="grid grid-cols-3 gap-4 text-center text-xs">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center text-xs">
               <div>
-                <div className="font-semibold text-gray-900">{currentUser.postCount}</div>
+                <div className="font-semibold text-gray-900 text-sm sm:text-base">{currentUser.postCount}</div>
                 <div className="text-gray-500">Posts</div>
               </div>
               <div>
-                <div className="font-semibold text-gray-900">{currentUser.commentCount}</div>
+                <div className="font-semibold text-gray-900 text-sm sm:text-base">{currentUser.commentCount}</div>
                 <div className="text-gray-500">Comments</div>
               </div>
               <div>
-                <div className="font-semibold text-gray-900">{currentUser.likeCount}</div>
+                <div className="font-semibold text-gray-900 text-sm sm:text-base">{currentUser.likeCount}</div>
                 <div className="text-gray-500">Likes</div>
               </div>
             </div>
@@ -302,13 +302,13 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
     <div className="space-y-4">
       {/* Login Form */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Join the Community</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg sm:text-xl">Join the Community</CardTitle>
+          <CardDescription className="text-sm">
             Connect with fellow food enthusiasts and share your culinary experiences
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="login-username">Username</Label>
             <Input

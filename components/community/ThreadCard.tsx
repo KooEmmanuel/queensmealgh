@@ -133,19 +133,19 @@ export function ThreadCard({
 
   return (
     <Card className="w-full hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+      <CardHeader className="pb-3 p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
               <AvatarImage src={thread.authorAvatar} alt={thread.authorDisplayName} />
-              <AvatarFallback className="bg-green-100 text-green-800">
+              <AvatarFallback className="bg-green-100 text-green-800 text-xs sm:text-sm">
                 {thread.authorDisplayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900 truncate">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
                   {thread.authorDisplayName}
                 </h3>
                 {thread.authorBadges.includes('verified') && (
@@ -157,9 +157,9 @@ export function ThreadCard({
                 </Badge>
               </div>
               
-              <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
                 <Clock className="h-3 w-3" />
-                {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}
+                <span className="truncate">{formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</span>
                 {thread.updatedAt !== thread.createdAt && (
                   <>
                     <span>•</span>
@@ -170,31 +170,31 @@ export function ThreadCard({
             </div>
           </div>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             {thread.isPinned && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs hidden sm:inline-flex">
                 📌 Pinned
               </Badge>
             )}
             {thread.isLocked && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs hidden sm:inline-flex">
                 🔒 Locked
               </Badge>
             )}
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
         {/* Category and Tags */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <Badge variant="secondary" className="text-xs">
             {thread.category}
           </Badge>
-          {thread.tags.map((tag, index) => (
+          {thread.tags.slice(0, 3).map((tag, index) => (
             <Badge key={index} variant="outline" className="text-xs">
               #{tag}
             </Badge>
@@ -202,77 +202,79 @@ export function ThreadCard({
         </div>
 
         {/* Thread Title */}
-        <h2 className="text-xl font-bold text-gray-900 leading-tight">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
           {thread.title}
         </h2>
 
         {/* Thread Content */}
         <div className="prose prose-gray max-w-none">
-          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
             {thread.content}
           </p>
         </div>
 
         {/* Thread Stats */}
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
           <div className="flex items-center gap-1">
-            <Eye className="h-4 w-4" />
+            <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
             {thread.views} views
           </div>
           <div className="flex items-center gap-1">
-            <MessageSquare className="h-4 w-4" />
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
             {thread.comments.length} comments
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant={thread.isLiked ? "default" : "outline"}
               size="sm"
               onClick={() => onLike(thread._id)}
-              className={thread.isLiked ? "bg-red-500 hover:bg-red-600" : ""}
+              className={`${thread.isLiked ? "bg-red-500 hover:bg-red-600" : ""} h-8 sm:h-9 px-2 sm:px-3`}
             >
-              <Heart className={`h-4 w-4 mr-1 ${thread.isLiked ? "fill-current" : ""}`} />
-              {thread.likes}
+              <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${thread.isLiked ? "fill-current" : ""} ${thread.likes > 0 ? "mr-1" : ""}`} />
+              {thread.likes > 0 && <span className="text-xs sm:text-sm">{thread.likes}</span>}
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowComments(!showComments)}
+              className="h-8 sm:h-9 px-2 sm:px-3"
             >
-              <MessageSquare className="h-4 w-4 mr-1" />
-              Comment
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Comment</span>
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => onBookmark(thread._id)}
-              className={thread.isBookmarked ? "bg-yellow-50 border-yellow-200" : ""}
+              className={`${thread.isBookmarked ? "bg-yellow-50 border-yellow-200" : ""} h-8 sm:h-9 px-2 sm:px-3`}
             >
-              <Bookmark className={`h-4 w-4 ${thread.isBookmarked ? "fill-current" : ""}`} />
+              <Bookmark className={`h-3 w-3 sm:h-4 sm:w-4 ${thread.isBookmarked ? "fill-current" : ""}`} />
             </Button>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onShare(thread)}
+              className="h-8 w-8 sm:h-9 sm:w-9 p-0"
             >
-              <Share2 className="h-4 w-4" />
+              <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onReport(thread._id)}
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 h-8 w-8 sm:h-9 sm:w-9 p-0"
             >
-              <Flag className="h-4 w-4" />
+              <Flag className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>

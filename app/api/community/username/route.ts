@@ -21,8 +21,8 @@ export async function GET(request: Request) {
       username: username.toLowerCase()
     });
     
-    // Also check if any discussion has this author name
-    const existingAuthor = await db.collection('discussions').findOne({
+    // Also check if any thread has this author name
+    const existingAuthor = await db.collection('threads').findOne({
       author: username
     });
     
@@ -58,8 +58,8 @@ export async function POST(request: Request) {
       username: username.toLowerCase()
     });
     
-    // Also check if any discussion has this author name
-    const existingAuthor = await db.collection('discussions').findOne({
+    // Also check if any thread has this author name
+    const existingAuthor = await db.collection('threads').findOne({
       author: username
     });
     
