@@ -22,10 +22,12 @@ import {
   List,
   FileText,
   X,
-  Check
+  Check,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { EnhancedAIContentGenerator } from "@/components/EnhancedAIContentGenerator";
 
 interface FeaturedContent {
   _id: string;
@@ -359,6 +361,33 @@ export default function FeaturedContentPage() {
                         className="w-full text-sm"
                       />
                     </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* AI Content Generator */}
+                  <div className="space-y-3 sm:space-y-4">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      AI Content Generator
+                    </h3>
+                    <EnhancedAIContentGenerator
+                      type="featured"
+                      onContentGenerated={(content) => {
+                        setTitle(content.title);
+                        setDescription(content.description);
+                        if (content.ingredients) {
+                          setIngredients(content.ingredients);
+                        }
+                        if (content.instructions) {
+                          setInstructions(content.instructions);
+                        }
+                      }}
+                      onImageGenerated={(imageUrl) => {
+                        setImageBase64(imageUrl);
+                        setPreviewUrl(imageUrl);
+                      }}
+                    />
                   </div>
 
                   <Separator />

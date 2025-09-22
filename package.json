@@ -75,7 +75,7 @@
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
     "next": "15.2.4",
-    "openai": "^4.94.0",
+    "openai": "^4.104.0",
     "react": "^19",
     "react-day-picker": "^9.11.0",
     "react-dom": "^19",

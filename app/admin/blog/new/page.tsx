@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import dynamic from 'next/dynamic';
+import { EnhancedAIContentGenerator } from '@/components/EnhancedAIContentGenerator';
 
 // Add this interface at the top of the file, after imports
 interface EditorBlock {
@@ -258,6 +259,22 @@ export default function NewBlogPostPage() {
             <p className="text-xs leading-5 text-gray-600 mt-1">PNG, JPG, GIF up to 10MB</p>
           </div>
         )}
+        
+        {/* AI Content Generator */}
+        <div className="mb-6 sm:mb-8">
+          <EnhancedAIContentGenerator
+            type="blog"
+            onContentGenerated={(content) => {
+              setTitle(content.title);
+              if (content.content) {
+                setEditorData(content.content);
+              }
+            }}
+            onImageGenerated={(imageUrl) => {
+              setCoverImage(imageUrl);
+            }}
+          />
+        </div>
         
         {/* Title input */}
         <input
