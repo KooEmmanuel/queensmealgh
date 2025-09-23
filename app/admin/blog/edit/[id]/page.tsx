@@ -46,7 +46,7 @@ const Editor = dynamic(() => import('@/components/ui/editor-js').then((mod) => m
   loading: () => <p>Loading editor...</p>
 });
 
-export default function EditBlogPostPage({ params }: { params: { id: string } }) {
+export default function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
   const [title, setTitle] = useState('');
   const [editorData, setEditorData] = useState<EditorData>({ blocks: [] }); // Use EditorData type
   const [coverImage, setCoverImage] = useState<string | null>(null);
@@ -58,20 +58,26 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const titleRef = useRef<HTMLInputElement>(null);
+  const [blogId, setBlogId] = useState<string | null>(null);
 
-  // --- Extract id here ---
-  const { id } = params;
+  // Resolve params
+  useEffect(() => {
+    const initializeParams = async () => {
+      const resolvedParams = await params;
+      setBlogId(resolvedParams.id);
+    };
+    
+    initializeParams();
+  }, [params]);
 
   // Fetch existing post data
   useEffect(() => {
-    // --- Use the extracted id variable ---
-    if (!id) return; // Add a check in case id is somehow missing initially
+    if (!blogId) return;
 
     const fetchPost = async () => {
       try {
         setLoading(true);
-        // --- Use the extracted id variable ---
-        const response = await fetch(`/api/blog/${id}`);
+        const response = await fetch(`/api/blog/${blogId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch blog post');
         }
@@ -126,8 +132,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
     };
 
     fetchPost();
-    // --- Use the extracted id variable in the dependency array ---
-  }, [id, toast]);
+  }, [blogId, toast]);
 
 
   // Handler for saving changes
@@ -160,7 +165,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
         updatedAt: new Date().toISOString() // Add updatedAt timestamp
       };
 
-      const response = await fetch(`/api/blog/${id}`, {
+      const response = await fetch(`/api/blog/${blogId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
