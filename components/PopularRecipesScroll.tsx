@@ -66,7 +66,7 @@ export default function PopularRecipesScroll() {
         >
           <div className="bg-gradient-to-r from-green-50 to-orange-50 rounded-2xl p-6 mb-6">
             <p className="text-gray-700 mb-4 font-sourcesans text-lg">
-              🎉 <strong>New recipes added daily!</strong> Join thousands of food lovers discovering authentic African flavors.
+              🎉 <strong>New recipes added daily!</strong> Join a growing community of food lovers discovering authentic African flavors.
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">

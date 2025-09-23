@@ -23,14 +23,19 @@ interface DisplayMetric {
 
 // Helper function to format large numbers
 const formatNumber = (num: number | null): string => {
-  if (num === null) return '-';
+  if (num === null || num === undefined) return '0';
+  if (num === 0) return '0';
+  
+  // Format large numbers with proper abbreviations
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M';
   }
   if (num >= 1000) {
     return (num / 1000).toFixed(1) + 'K';
   }
-  return num.toString();
+  
+  // For numbers less than 1000, show the actual number
+  return num.toLocaleString();
 };
 
 // Animation variants for the container and items
@@ -85,13 +90,31 @@ export function SocialMetricsSection() {
     fetchMetrics();
   }, []);
 
-  // Prepare data for display
+  // Calculate total followers across all platforms
+  const totalFollowers = (metrics?.Instagram?.Followers ?? 0) + 
+                        (metrics?.TikTok?.Followers ?? 0) + 
+                        (metrics?.YouTube?.Subscribers ?? 0);
+
+  // Prepare data for display with better fallbacks
   const displayMetrics: DisplayMetric[] = [
-    { platform: 'Instagram', icon: <Instagram className="h-8 w-8 text-pink-500" />, value: metrics?.Instagram?.Followers ?? null, label: 'Followers' },
-    { platform: 'TikTok', icon: <FaTiktok className="h-8 w-8 text-black" />, value: metrics?.TikTok?.Followers ?? null, label: 'Followers' },
-    { platform: 'YouTube', icon: <Youtube className="h-8 w-8 text-red-600" />, value: metrics?.YouTube?.Subscribers ?? null, label: 'Subscribers' },
-    // Add more metrics if needed, e.g., YouTube Views
-    // { platform: 'YouTube', icon: <Youtube className="h-8 w-8 text-red-600" />, value: metrics?.YouTube?.TotalViews ?? null, label: 'Total Views' },
+    { 
+      platform: 'Instagram', 
+      icon: <Instagram className="h-8 w-8 text-pink-500" />, 
+      value: metrics?.Instagram?.Followers ?? 0, 
+      label: 'Followers' 
+    },
+    { 
+      platform: 'TikTok', 
+      icon: <FaTiktok className="h-8 w-8 text-black" />, 
+      value: metrics?.TikTok?.Followers ?? 0, 
+      label: 'Followers' 
+    },
+    { 
+      platform: 'YouTube', 
+      icon: <Youtube className="h-8 w-8 text-red-600" />, 
+      value: metrics?.YouTube?.Subscribers ?? 0, 
+      label: 'Subscribers' 
+    },
   ];
 
   return (
@@ -101,7 +124,7 @@ export function SocialMetricsSection() {
           Join Our Community
         </h2>
         <p className="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
-          Connect with us and thousands of food lovers across your favorite platforms!
+          Connect with us and {totalFollowers > 0 ? `${formatNumber(totalFollowers)}+` : 'a growing community of'} food lovers across your favorite platforms!
         </p>
 
         {loading ? (
@@ -120,12 +143,30 @@ export function SocialMetricsSection() {
             <div className="text-red-500">{error}</div>
         ) : (
           // Display Metrics with Animation
-          <motion.div
-            className="flex flex-wrap justify-center items-center gap-8 md:gap-16"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible" // Use whileInView for scroll-triggered animation: initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}
-          >
+          <div className="space-y-8">
+            {/* Total Count Display */}
+            {totalFollowers > 0 && (
+              <motion.div
+                className="text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">
+                  {formatNumber(totalFollowers)}+
+                </div>
+                <div className="text-lg text-gray-600">
+                  Total Followers Across All Platforms
+                </div>
+              </motion.div>
+            )}
+            
+            <motion.div
+              className="flex flex-wrap justify-center items-center gap-8 md:gap-16"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible" // Use whileInView for scroll-triggered animation: initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}
+            >
             {displayMetrics.map((metric) => (
               <motion.div
                 key={`${metric.platform}-${metric.label}`}
@@ -142,7 +183,8 @@ export function SocialMetricsSection() {
                 </span>
               </motion.div>
             ))}
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </div>
     </section>

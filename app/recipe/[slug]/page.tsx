@@ -3,6 +3,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Clock, Users, ChefHat, Bookmark, Printer, Share2, Star } from "lucide-react"
+import Footer from '@/components/Footer'
 
 export default function RecipePage({ params }: { params: { slug: string } }) {
   return (
@@ -283,113 +284,7 @@ export default function RecipePage({ params }: { params: { slug: string } }) {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-50 py-12 mt-12">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <span className="text-2xl font-bold">
-                FLAV<span className="text-orange-500">ORIZ</span>
-              </span>
-              <p className="text-gray-600 mt-2 max-w-md">
-                Your ultimate destination for culinary adventures and recipe discoveries.
-              </p>
-            </div>
-            <div className="flex gap-8">
-              <div>
-                <h4 className="font-semibold mb-3">Quick Links</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <Link href="/" className="text-gray-600 hover:text-orange-500">
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/recipes" className="text-gray-600 hover:text-orange-500">
-                      Recipes
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/blog" className="text-gray-600 hover:text-orange-500">
-                      Blog
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-3">Connect</h4>
-                <ul className="space-y-2">
-                  <li>
-                    <Link href="/about" className="text-gray-600 hover:text-orange-500">
-                      About Us
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="text-gray-600 hover:text-orange-500">
-                      Contact
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/community" className="text-gray-600 hover:text-orange-500">
-                      Community
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-200 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm">© 2023 Flavoriz. All rights reserved.</p>
-            <div className="flex gap-4 mt-4 md:mt-0">
-              <Link href="https://www.tiktok.com/@queens_meal" className="text-gray-600 hover:text-orange-500" target="_blank" rel="noopener noreferrer">
-                <span className="sr-only">TikTok</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                </svg>
-              </Link>
-              <Link href="https://www.instagram.com/queensmeal12/" className="text-gray-600 hover:text-orange-500" target="_blank" rel="noopener noreferrer">
-                <span className="sr-only">Instagram</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-5 w-5"
-                >
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                </svg>
-              </Link>
-              <Link href="https://www.youtube.com/@queens_meal_" className="text-gray-600 hover:text-orange-500" target="_blank" rel="noopener noreferrer">
-                <span className="sr-only">YouTube</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
-                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-                </svg>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

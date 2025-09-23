@@ -12,6 +12,7 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { ImageUploadPreview } from './ImageUploadPreview';
 import Image from "next/image";
@@ -37,6 +38,7 @@ export function EditTikTokModal({ post, isOpen, onClose, onSave }: EditTikTokMod
   const [formData, setFormData] = useState<Partial<TikTokPost>>({});
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const { toast } = useToast();
 
   // Reset form when post changes
   useEffect(() => {
@@ -92,10 +94,21 @@ export function EditTikTokModal({ post, isOpen, onClose, onSave }: EditTikTokMod
         thumbnail: updatedPost.thumbnail || post.thumbnail
       } as TikTokPost);
       
+      toast({
+        title: "✅ TikTok Video Updated!",
+        description: "Your TikTok video has been successfully updated.",
+        duration: 4000,
+      });
+      
       onClose();
     } catch (error) {
       console.error('Error updating video:', error);
-      alert('Failed to update video. Please try again.');
+      toast({
+        title: "❌ Update Failed",
+        description: "Failed to update TikTok video. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setLoading(false);
     }

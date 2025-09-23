@@ -83,6 +83,13 @@ export function SocialMetricsForm() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Show loading toast
+    toast({
+      title: "💾 Saving Metrics...",
+      description: "Please wait while we save your social media metrics.",
+      duration: 2000,
+    });
+
     const payload = METRIC_DEFINITIONS.map(def => {
       const key = generateKey(def.platform, def.metricType);
       return {
@@ -105,17 +112,19 @@ export function SocialMetricsForm() {
       }
 
       toast({
-        title: "Success",
-        description: "Social media metrics saved successfully.",
+        title: "✅ Metrics Saved Successfully!",
+        description: "Your social media metrics have been updated and saved.",
+        duration: 4000,
       });
       // Optionally re-fetch metrics after saving
       // fetchMetrics();
     } catch (error: any) {
       console.error("Error saving metrics:", error);
       toast({
-        title: "Error Saving Metrics",
-        description: error.message || "An unexpected error occurred.",
+        title: "❌ Failed to Save Metrics",
+        description: error.message || "An unexpected error occurred while saving your metrics.",
         variant: "destructive",
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
