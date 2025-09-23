@@ -14,15 +14,25 @@ export async function GET() {
       .sort({ platform: 1, metricType: 1 });
       
     const metrics = await metricsCursor.toArray(); // Convert cursor to array
+    
+    console.log("=== PUBLIC SOCIAL METRICS API ===");
+    console.log("Raw metrics from DB:", JSON.stringify(metrics, null, 2));
 
     // Structure the data for easier frontend consumption
     const structuredMetrics: { [platform: string]: { [metricType: string]: number } } = {};
     metrics.forEach((metric: any) => { // Use 'any' or define a simple interface here
-      if (!structuredMetrics[metric.platform]) {
-        structuredMetrics[metric.platform] = {};
+      // Normalize platform names to match frontend expectations
+      const normalizedPlatform = metric.platform.charAt(0).toUpperCase() + metric.platform.slice(1).toLowerCase();
+      const normalizedMetricType = metric.metricType.charAt(0).toUpperCase() + metric.metricType.slice(1).toLowerCase();
+      
+      if (!structuredMetrics[normalizedPlatform]) {
+        structuredMetrics[normalizedPlatform] = {};
       }
-      structuredMetrics[metric.platform][metric.metricType] = metric.value;
+      structuredMetrics[normalizedPlatform][normalizedMetricType] = metric.value;
     });
+    
+    console.log("Structured metrics for frontend:", JSON.stringify(structuredMetrics, null, 2));
+    console.log("=== END PUBLIC SOCIAL METRICS API ===");
 
     return NextResponse.json(structuredMetrics);
   } catch (error) {

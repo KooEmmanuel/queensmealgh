@@ -445,12 +445,12 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
       {/* Main Content Container */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Article Title */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight text-center">
           {post.title}
         </h1>
 
         {/* Article Meta */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
           {post.category && (
             <div className="flex items-center">
               <span className="inline-block bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium">
