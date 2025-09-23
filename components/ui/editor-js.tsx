@@ -222,10 +222,21 @@ export const Editor = memo(({
       setIsLoading(true);
       setHasError(false);
 
-      // Validate holder element exists
-      const holderElement = document.getElementById(holderIdRef.current);
+      // Wait for DOM element to be available
+      let attempts = 0;
+      const maxAttempts = 10;
+      let holderElement = null;
+      
+      while (attempts < maxAttempts && !holderElement) {
+        holderElement = document.getElementById(holderIdRef.current);
+        if (!holderElement) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+        }
+      }
+      
       if (!holderElement) {
-        throw new EditorInitializationError(`Editor holder element not found: ${holderIdRef.current}`);
+        throw new EditorInitializationError(`Editor holder element not found: ${holderIdRef.current} after ${maxAttempts} attempts`);
       }
 
       // Validate data structure
@@ -402,7 +413,12 @@ export const Editor = memo(({
   }, [validatedData, placeholder, readOnly, minHeight, onError, onReady, toast]);
 
   useEffect(() => {
-    initializeEditor();
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initializeEditor();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [initializeEditor]);
 
   // Cleanup function

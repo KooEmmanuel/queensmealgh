@@ -307,14 +307,13 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
         />
 
         {/* Editor.js Instance */}
-        <div className="editor-wrapper prose max-w-none min-h-[250px] sm:min-h-[300px] w-full overflow-x-auto"> {/* Added wrapper and prose */}
+        <div className="min-h-[250px] sm:min-h-[300px] w-full overflow-x-auto">
            <Editor
              // Use editorData state which holds the fetched content
              data={editorData}
              // Update editorData state when content changes
              onChange={setEditorData}
              placeholder="Start writing your blog post..."
-             holder="admin-blog-editor"
            />
         </div>
       </div>
