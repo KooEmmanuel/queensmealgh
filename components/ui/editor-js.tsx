@@ -107,6 +107,7 @@ export const Editor = memo(({
   const holderIdRef = useRef(holder || 'editorjs-container');
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
   // Validate initial data
@@ -224,18 +225,20 @@ export const Editor = memo(({
 
       // Wait for DOM element to be available
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 20; // Increased attempts
       let holderElement = null;
       
       while (attempts < maxAttempts && !holderElement) {
         holderElement = document.getElementById(holderIdRef.current);
         if (!holderElement) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay
           attempts++;
         }
       }
       
       if (!holderElement) {
+        console.error(`Editor holder element not found: ${holderIdRef.current} after ${maxAttempts} attempts`);
+        console.error('Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
         throw new EditorInitializationError(`Editor holder element not found: ${holderIdRef.current} after ${maxAttempts} attempts`);
       }
 
@@ -245,6 +248,8 @@ export const Editor = memo(({
       }
 
       console.log(`Initializing EditorJS for holder: ${holderIdRef.current}`);
+      console.log('Element found:', holderElement);
+      console.log('Element ID:', holderElement?.id);
       
       const editor = new EditorJS({
         holder: holderIdRef.current,
@@ -412,14 +417,22 @@ export const Editor = memo(({
     }
   }, [validatedData, placeholder, readOnly, minHeight, onError, onReady, toast]);
 
+  // Set mounted state
   useEffect(() => {
-    // Add a small delay to ensure DOM is ready
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Only initialize if component is mounted
+    if (!isMounted) return;
+    
+    // Add a delay to ensure DOM is ready and component is mounted
     const timer = setTimeout(() => {
       initializeEditor();
-    }, 100);
+    }, 200);
     
     return () => clearTimeout(timer);
-  }, [initializeEditor]);
+  }, [initializeEditor, isMounted]);
 
   // Cleanup function
   const cleanup = useCallback(() => {
