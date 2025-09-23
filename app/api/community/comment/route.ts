@@ -57,6 +57,21 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    // Update user's comment count
+    await db.collection('community_users').updateOne(
+      { username: author.toLowerCase() },
+      { 
+        $inc: { commentCount: 1 },
+        $set: { lastActive: new Date() }
+      }
+    );
+
+    // Update user's reputation for commenting
+    await db.collection('community_users').updateOne(
+      { username: author.toLowerCase() },
+      { $inc: { reputation: 2 } } // 2 points for commenting
+    );
     
     // Broadcast the new comment to all connected clients
     broadcastUpdate('new_comment', {

@@ -189,8 +189,35 @@ export default function CommunityPage() {
     setCurrentUser(safeUser);
   };
 
+  const refreshUserData = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const response = await fetch(`/api/community/users/${currentUser.username}`);
+      const data = await response.json();
+      
+      if (data.success && data.user) {
+        const updatedUser = {
+          ...data.user,
+          badges: data.user.badges || [],
+          postCount: data.user.postCount || 0,
+          commentCount: data.user.commentCount || 0,
+          likeCount: data.user.likeCount || 0,
+          reputation: data.user.reputation || 0
+        };
+        setCurrentUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   const handleUserLogout = () => {
     setCurrentUser(null);
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
   };
 
   const handlePhotoUpdate = (photoUrl: string) => {
@@ -262,6 +289,8 @@ export default function CommunityPage() {
         });
         setShowCreateForm(false);
         fetchThreads();
+        // Refresh user data to update post count
+        refreshUserData();
       } else {
         toast({
           title: "Error",
@@ -421,6 +450,8 @@ export default function CommunityPage() {
           description: "Your comment has been added successfully!",
         });
         fetchThreads();
+        // Refresh user data to update comment count
+        refreshUserData();
       } else {
         throw new Error(data.error || 'Failed to add comment');
       }
@@ -652,6 +683,13 @@ export default function CommunityPage() {
                         Posts
                       </span>
                       <span className="text-sm font-medium">{currentUser.postCount}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Comments
+                      </span>
+                      <span className="text-sm font-medium">{currentUser.commentCount}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="flex items-center justify-between">
                       <span className="flex items-center">
