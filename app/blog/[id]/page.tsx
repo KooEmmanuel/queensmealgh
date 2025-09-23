@@ -450,29 +450,29 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
         </h1>
 
         {/* Article Meta */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+        <div className="flex items-center justify-center gap-1 sm:gap-2 md:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100 overflow-x-auto">
           {post.category && (
-            <div className="flex items-center">
-              <span className="inline-block bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium">
+            <div className="flex items-center flex-shrink-0">
+              <span className="inline-block bg-pink-100 text-pink-800 px-1.5 py-0.5 rounded-full text-xs font-medium">
                 {post.category.toUpperCase()}
               </span>
             </div>
           )}
-          <div className="flex items-center">
-            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="font-medium text-xs sm:text-sm">By {post.author.name}</span>
+          <div className="flex items-center flex-shrink-0">
+            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="font-medium text-xs sm:text-sm whitespace-nowrap">By {post.author.name}</span>
           </div>
-          <div className="flex items-center">
-            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">{new Date(post.createdAt).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+          <div className="flex items-center flex-shrink-0">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="text-xs sm:text-sm whitespace-nowrap">{new Date(post.createdAt).toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric',
+              year: 'numeric'
             })}</span>
           </div>
-          <div className="flex items-center">
-            <div className="w-1 h-1 bg-gray-300 rounded-full mr-1 sm:mr-2"></div>
-            <span className="text-xs sm:text-sm">5 Min Read</span>
+          <div className="flex items-center flex-shrink-0">
+            <div className="w-1 h-1 bg-gray-300 rounded-full mr-1"></div>
+            <span className="text-xs sm:text-sm whitespace-nowrap">5 Min Read</span>
           </div>
         </div>
 
