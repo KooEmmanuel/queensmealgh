@@ -104,7 +104,8 @@ export const Editor = memo(({
 }: EditorProps) => {
   const editorInstanceRef = useRef<EditorJS | null>(null);
   const isReadyRef = useRef(false);
-  const holderIdRef = useRef(holder || 'editorjs-container');
+  // Generate unique ID to avoid conflicts
+  const holderIdRef = useRef(holder || `editorjs-container-${Math.random().toString(36).substr(2, 9)}`);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -215,7 +216,7 @@ export const Editor = memo(({
 
   // Initialize Editor.js with comprehensive error handling
   const initializeEditor = useCallback(async () => {
-    if (editorInstanceRef.current || hasError) {
+    if (editorInstanceRef.current || hasError || !isMounted) {
       return;
     }
 
@@ -223,15 +224,25 @@ export const Editor = memo(({
       setIsLoading(true);
       setHasError(false);
 
-      // Wait for DOM element to be available
+      // Wait for DOM element to be available with more robust checking
       let attempts = 0;
-      const maxAttempts = 20; // Increased attempts
+      const maxAttempts = 30; // Increased attempts
       let holderElement = null;
       
       while (attempts < maxAttempts && !holderElement) {
+        // Try multiple ways to find the element
         holderElement = document.getElementById(holderIdRef.current);
+        
+        // If not found by ID, try to find by class or other attributes
         if (!holderElement) {
-          await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay
+          const elements = document.querySelectorAll(`[id="${holderIdRef.current}"]`);
+          if (elements.length > 0) {
+            holderElement = elements[0] as HTMLElement;
+          }
+        }
+        
+        if (!holderElement) {
+          await new Promise(resolve => setTimeout(resolve, 100)); // Increased delay
           attempts++;
         }
       }
@@ -239,7 +250,28 @@ export const Editor = memo(({
       if (!holderElement) {
         console.error(`Editor holder element not found: ${holderIdRef.current} after ${maxAttempts} attempts`);
         console.error('Available elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
-        throw new EditorInitializationError(`Editor holder element not found: ${holderIdRef.current} after ${maxAttempts} attempts`);
+        console.error('Document ready state:', document.readyState);
+        console.error('Component mounted:', isMounted);
+        
+        // Try to create the element as a fallback
+        console.log('Attempting to create fallback element...');
+        const fallbackElement = document.createElement('div');
+        fallbackElement.id = holderIdRef.current;
+        fallbackElement.className = 'prose max-w-none';
+        fallbackElement.style.minHeight = `${minHeight}px`;
+        if (maxHeight) {
+          fallbackElement.style.maxHeight = `${maxHeight}px`;
+          fallbackElement.style.overflowY = 'auto';
+        }
+        
+        // Try to append to body or find a suitable parent
+        const targetParent = document.body || document.documentElement;
+        targetParent.appendChild(fallbackElement);
+        holderElement = fallbackElement;
+        
+        if (!holderElement) {
+          throw new EditorInitializationError(`Editor holder element not found: ${holderIdRef.current} after ${maxAttempts} attempts and fallback creation failed`);
+        }
       }
 
       // Validate data structure
@@ -415,7 +447,7 @@ export const Editor = memo(({
         variant: "destructive",
       });
     }
-  }, [validatedData, placeholder, readOnly, minHeight, onError, onReady, toast]);
+  }, [validatedData, placeholder, readOnly, minHeight, onError, onReady, toast, isMounted]);
 
   // Set mounted state
   useEffect(() => {
@@ -426,10 +458,18 @@ export const Editor = memo(({
     // Only initialize if component is mounted
     if (!isMounted) return;
     
-    // Add a delay to ensure DOM is ready and component is mounted
-    const timer = setTimeout(() => {
-      initializeEditor();
-    }, 200);
+    // Use requestAnimationFrame to ensure DOM is fully rendered
+    const initializeWithRAF = () => {
+      requestAnimationFrame(() => {
+        // Double RAF to ensure the element is in the DOM
+        requestAnimationFrame(() => {
+          initializeEditor();
+        });
+      });
+    };
+    
+    // Add a small delay to ensure DOM is ready and component is mounted
+    const timer = setTimeout(initializeWithRAF, 100);
     
     return () => clearTimeout(timer);
   }, [initializeEditor, isMounted]);
@@ -493,17 +533,32 @@ export const Editor = memo(({
           </svg>
           <h3 className="text-lg font-medium">Editor Failed to Load</h3>
           <p className="text-sm text-gray-600 mt-2">
-            There was an error initializing the editor. Please refresh the page to try again.
+            There was an error initializing the editor. Please try again.
           </p>
-          <button
-            onClick={() => {
-              setHasError(false);
-              initializeEditor();
-            }}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Retry
-          </button>
+          <div className="mt-4 space-x-2">
+            <button
+              onClick={() => {
+                setHasError(false);
+                setIsLoading(true);
+                // Force re-initialization with a fresh holder ID
+                holderIdRef.current = `editorjs-container-${Math.random().toString(36).substr(2, 9)}`;
+                setTimeout(() => {
+                  initializeEditor();
+                }, 100);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => {
+                window.location.reload();
+              }}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+            >
+              Refresh Page
+            </button>
+          </div>
         </div>
       </div>
     );
