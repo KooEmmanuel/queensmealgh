@@ -1,6 +1,7 @@
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { EnhancedNewsletterGenerator } from '@/components/admin/EnhancedNewsletterGenerator';
 import { NewsletterList } from '@/components/admin/NewsletterList';
+import { NewsletterSubscribers } from '@/components/admin/NewsletterSubscribers';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function AdminNewsletterPage() {
@@ -17,6 +18,11 @@ export default function AdminNewsletterPage() {
             <div>
               <h2 className="text-lg font-semibold mb-4">Create New Newsletter</h2>
               <EnhancedNewsletterGenerator />
+            </div>
+            
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Newsletter Subscribers</h2>
+              <NewsletterSubscribers />
             </div>
             
             <div>

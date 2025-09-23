@@ -5,11 +5,15 @@ export async function GET(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     
+    console.log('Fetching newsletter subscribers...');
+    
     // Get all newsletter subscribers
     const subscribers = await db.collection('newsletter_subscriptions')
       .find({})
       .sort({ subscribedAt: -1 })
       .toArray();
+
+    console.log(`Found ${subscribers.length} subscribers:`, subscribers);
 
     return NextResponse.json({
       success: true,
