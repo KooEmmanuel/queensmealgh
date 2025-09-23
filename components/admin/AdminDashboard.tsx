@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface DashboardStats {
   totalSubscribers: number;
@@ -30,6 +31,7 @@ interface DashboardStats {
 
 export function AdminDashboard() {
   const { toast } = useToast();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalSubscribers: 0,
     totalContacts: 0,
@@ -82,6 +84,25 @@ export function AdminDashboard() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'instagram':
+        router.push('/admin/instagram');
+        break;
+      case 'tiktok':
+        router.push('/admin/tiktok');
+        break;
+      case 'blog':
+        router.push('/admin/blog');
+        break;
+      case 'featured':
+        router.push('/admin/featured');
+        break;
+      default:
+        break;
     }
   };
 
@@ -237,19 +258,35 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Button variant="outline" className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2 hover:bg-pink-50 hover:border-pink-300 transition-colors"
+                onClick={() => handleQuickAction('instagram')}
+              >
                 <Instagram className="h-5 w-5 sm:h-6 sm:w-6 text-pink-500" />
                 <span className="text-xs sm:text-sm text-center">New Instagram Post</span>
               </Button>
-              <Button variant="outline" className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2 hover:bg-red-50 hover:border-red-300 transition-colors"
+                onClick={() => handleQuickAction('tiktok')}
+              >
                 <Film className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
                 <span className="text-xs sm:text-sm text-center">New TikTok Video</span>
               </Button>
-              <Button variant="outline" className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2 hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                onClick={() => handleQuickAction('blog')}
+              >
                 <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />
                 <span className="text-xs sm:text-sm text-center">New Blog Post</span>
               </Button>
-              <Button variant="outline" className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2">
+              <Button 
+                variant="outline" 
+                className="h-auto p-3 sm:p-4 flex flex-col items-center space-y-2 hover:bg-yellow-50 hover:border-yellow-300 transition-colors"
+                onClick={() => handleQuickAction('featured')}
+              >
                 <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
                 <span className="text-xs sm:text-sm text-center">Feature Content</span>
               </Button>
