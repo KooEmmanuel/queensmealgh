@@ -17,6 +17,8 @@ export async function GET() {
     // Use db.collection().find() - ensure collection name matches ('socialMetrics' or 'socialmetrics')
     const metricsCursor = db.collection('social_metrics').find({}).sort({ platform: 1, metricType: 1 });
     const metrics = await metricsCursor.toArray(); // Convert cursor to array
+    
+    console.log("Fetched metrics:", JSON.stringify(metrics, null, 2)); // Debug log
     return NextResponse.json(metrics);
   } catch (error) {
     console.error("Error fetching social metrics:", error);
@@ -38,7 +40,7 @@ export async function POST(request: Request) {
 
     const operations = body.map(metric => {
       const numericValue = Number(metric.value);
-      if (isNaN(numericValue)) {
+      if (isNaN(numericValue) || numericValue < 0) {
         console.warn(`Skipping invalid value for ${metric.platform} - ${metric.metricType}: ${metric.value}`);
         return null;
       }
@@ -51,8 +53,8 @@ export async function POST(request: Request) {
           filter: { platform: cleanPlatform, metricType: cleanMetricType },
           update: {
             $set: {
-              platform: metric.platform,
-              metricType: metric.metricType,
+              platform: cleanPlatform,
+              metricType: cleanMetricType,
               value: numericValue,
               lastUpdated: new Date(),
             },

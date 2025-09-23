@@ -90,14 +90,33 @@ export function SocialMetricsForm() {
       duration: 2000,
     });
 
-    const payload = METRIC_DEFINITIONS.map(def => {
-      const key = generateKey(def.platform, def.metricType);
-      return {
-        platform: def.platform,
-        metricType: def.metricType,
-        value: metrics[key] || '0', // Send '0' if empty, API handles conversion/validation
-      };
-    });
+    const payload = METRIC_DEFINITIONS
+      .map(def => {
+        const key = generateKey(def.platform, def.metricType);
+        const value = metrics[key];
+        if (!value || value.trim() === '') {
+          return null; // Skip empty values
+        }
+        return {
+          platform: def.platform,
+          metricType: def.metricType,
+          value: value,
+        };
+      })
+      .filter(item => item !== null); // Remove null entries
+
+    if (payload.length === 0) {
+      toast({
+        title: "⚠️ No Metrics to Save",
+        description: "Please enter at least one metric value before saving.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    console.log("Sending metrics payload:", payload); // Debug log
 
     try {
       const response = await fetch('/api/admin/social-metrics', {
