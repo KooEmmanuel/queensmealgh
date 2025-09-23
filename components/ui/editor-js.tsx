@@ -109,6 +109,9 @@ export const Editor = memo(({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  
+  // Global flag to prevent multiple initializations
+  const isInitializingRef = useRef(false);
   const { toast } = useToast();
 
   // Validate initial data
@@ -216,8 +219,27 @@ export const Editor = memo(({
 
   // Initialize Editor.js with comprehensive error handling
   const initializeEditor = useCallback(async () => {
-    if (editorInstanceRef.current || hasError || !isMounted) {
+    if (editorInstanceRef.current || hasError || !isMounted || isInitializingRef.current) {
+      console.log('Skipping initialization - already initialized, has error, not mounted, or currently initializing');
       return;
+    }
+
+    // Set the flag to prevent multiple initializations
+    isInitializingRef.current = true;
+
+    // Check if there's already an EditorJS instance in the DOM for this specific holder
+    const existingEditor = document.querySelector(`#${holderIdRef.current} .codex-editor`);
+    if (existingEditor) {
+      console.log('Existing EditorJS instance found for this holder, skipping initialization');
+      isInitializingRef.current = false;
+      return;
+    }
+
+    // Also check for any EditorJS instances globally to prevent conflicts
+    const globalEditor = document.querySelector('.codex-editor');
+    if (globalEditor && globalEditor.closest(`#${holderIdRef.current}`) === null) {
+      console.log('Another EditorJS instance exists, cleaning up first');
+      globalEditor.remove();
     }
 
     try {
@@ -444,17 +466,18 @@ export const Editor = memo(({
             shortcut: 'CMD+SHIFT+C',
           }
         },
-        onReady: () => {
-          console.log('Editor.js is ready.');
-          editorInstanceRef.current = editor;
-          isReadyRef.current = true;
-          setIsLoading(false);
-          // Mark the element as ready
-          if (holderElement) {
-            holderElement.setAttribute('data-editor-ready', 'true');
-          }
-          onReady?.();
-        },
+            onReady: () => {
+              console.log('Editor.js is ready.');
+              editorInstanceRef.current = editor;
+              isReadyRef.current = true;
+              setIsLoading(false);
+              isInitializingRef.current = false; // Reset the flag
+              // Mark the element as ready
+              if (holderElement) {
+                holderElement.setAttribute('data-editor-ready', 'true');
+              }
+              onReady?.();
+            },
         onChange: async (api, event) => {
           if (!readOnly && api.saver && isReadyRef.current) {
             try {
@@ -476,26 +499,27 @@ export const Editor = memo(({
       // Wait for editor to be ready
       await editor.isReady;
       
-    } catch (error) {
-      const initError = error instanceof EditorInitializationError || error instanceof EditorDataError 
-        ? error 
-        : new EditorInitializationError('Failed to initialize Editor.js', error as Error);
-      
-      reportError(initError, 'Editor Initialization', {
-        holder: holderIdRef.current,
-        data: validatedData
-      });
-      
-      setHasError(true);
-      setIsLoading(false);
-      onError?.(initError);
-      
-      toast({
-        title: "Editor Error",
-        description: "Failed to initialize the editor. Please refresh the page.",
-        variant: "destructive",
-      });
-    }
+        } catch (error) {
+          const initError = error instanceof EditorInitializationError || error instanceof EditorDataError 
+            ? error 
+            : new EditorInitializationError('Failed to initialize Editor.js', error as Error);
+          
+          reportError(initError, 'Editor Initialization', {
+            holder: holderIdRef.current,
+            data: validatedData
+          });
+          
+          setHasError(true);
+          setIsLoading(false);
+          isInitializingRef.current = false; // Reset the flag on error
+          onError?.(initError);
+          
+          toast({
+            title: "Editor Error",
+            description: "Failed to initialize the editor. Please refresh the page.",
+            variant: "destructive",
+          });
+        }
   }, [validatedData, placeholder, readOnly, minHeight, onError, onReady, toast, isMounted]);
 
   // Set mounted state
@@ -533,10 +557,14 @@ export const Editor = memo(({
   // Also try to initialize immediately when the element is rendered
   useEffect(() => {
     if (isMounted && !editorInstanceRef.current && !hasError) {
-      const timer = setTimeout(() => {
-        initializeEditor();
-      }, 50);
-      return () => clearTimeout(timer);
+      // Check if there's already an EditorJS instance
+      const existingEditor = document.querySelector('.codex-editor');
+      if (!existingEditor) {
+        const timer = setTimeout(() => {
+          initializeEditor();
+        }, 50);
+        return () => clearTimeout(timer);
+      }
     }
   }, [isMounted, initializeEditor, hasError]);
 
@@ -551,7 +579,15 @@ export const Editor = memo(({
       } finally {
         editorInstanceRef.current = null;
         isReadyRef.current = false;
+        isInitializingRef.current = false; // Reset the flag
       }
+    }
+    
+    // Also clean up any existing EditorJS elements in the DOM
+    const existingEditor = document.querySelector('.codex-editor');
+    if (existingEditor) {
+      console.log('Cleaning up existing EditorJS elements');
+      existingEditor.remove();
     }
   }, []);
 
@@ -667,12 +703,6 @@ export const Editor = memo(({
           el.setAttribute('data-editor-ready', 'false');
           // Force the element to be in the DOM
           el.style.display = 'block';
-          // Try to initialize immediately if not already done
-          if (isMounted && !editorInstanceRef.current && !hasError) {
-            setTimeout(() => {
-              initializeEditor();
-            }, 10);
-          }
         }
       }}
     />
