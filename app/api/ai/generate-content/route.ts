@@ -267,6 +267,7 @@ Please provide a JSON response with the following structure:
   "content": {
     "blocks": [
       {
+        "id": "unique-block-id-1",
         "type": "header",
         "data": {
           "text": "Header text",
@@ -274,9 +275,26 @@ Please provide a JSON response with the following structure:
         }
       },
       {
+        "id": "unique-block-id-2", 
         "type": "paragraph",
         "data": {
           "text": "Paragraph content"
+        }
+      },
+      {
+        "id": "unique-block-id-3",
+        "type": "list",
+        "data": {
+          "style": "unordered",
+          "items": ["Item 1", "Item 2", "Item 3"]
+        }
+      },
+      {
+        "id": "unique-block-id-4",
+        "type": "quote",
+        "data": {
+          "text": "Quote text",
+          "caption": "Quote attribution"
         }
       }
     ]
@@ -304,11 +322,14 @@ Create ${length} length content with proper structure including headers and para
     // Parse the JSON response
     const generatedContent = JSON.parse(content);
     
+    // Validate and fix the content structure
+    const validatedContent = validateAndFixEditorJsContent(generatedContent.content);
+    
     return {
       title: generatedContent.title,
       description: generatedContent.excerpt,
       excerpt: generatedContent.excerpt,
-      content: generatedContent.content,
+      content: validatedContent,
       tags: generatedContent.tags
     };
 
@@ -554,6 +575,7 @@ function generateBlogContentStructure(topic: string, category: string, tone: str
   
   const blocks = [
     {
+      id: `header-intro-${Date.now()}`,
       type: 'header',
       data: {
         text: `Introduction to ${topic}`,
@@ -564,6 +586,7 @@ function generateBlogContentStructure(topic: string, category: string, tone: str
 
   for (let i = 0; i < numParagraphs; i++) {
     blocks.push({
+      id: `paragraph-${i + 1}-${Date.now()}`,
       type: 'paragraph',
       data: {
         text: generateParagraph(topic, category, i + 1)
@@ -572,6 +595,7 @@ function generateBlogContentStructure(topic: string, category: string, tone: str
   }
 
   blocks.push({
+    id: `header-conclusion-${Date.now()}`,
     type: 'header',
     data: {
       text: 'Conclusion',
@@ -580,6 +604,7 @@ function generateBlogContentStructure(topic: string, category: string, tone: str
   });
 
   blocks.push({
+    id: `paragraph-conclusion-${Date.now()}`,
     type: 'paragraph',
     data: {
       text: `In conclusion, ${topic.toLowerCase()} plays an important role in African cuisine and culture. We hope this guide has provided valuable insights and inspiration for your culinary journey.`
@@ -654,4 +679,79 @@ function getTimeOfDay(): string {
   if (hour < 12) return 'breakfast';
   if (hour < 17) return 'lunch';
   return 'dinner';
+}
+
+// Validate and fix EditorJS content structure
+function validateAndFixEditorJsContent(content: any): any {
+  if (!content || typeof content !== 'object') {
+    console.warn('Invalid content structure, creating fallback');
+    return { blocks: [] };
+  }
+
+  if (!Array.isArray(content.blocks)) {
+    console.warn('Content blocks is not an array, creating fallback');
+    return { blocks: [] };
+  }
+
+  // Validate and fix each block
+  const validatedBlocks = content.blocks.map((block: any, index: number) => {
+    if (!block || typeof block !== 'object') {
+      console.warn(`Invalid block at index ${index}, skipping`);
+      return null;
+    }
+
+    // Ensure block has required fields
+    const validatedBlock = {
+      id: block.id || `block-${index}-${Date.now()}`,
+      type: block.type || 'paragraph',
+      data: block.data || {}
+    };
+
+    // Validate specific block types
+    switch (validatedBlock.type) {
+      case 'header':
+        if (!validatedBlock.data.text) {
+          validatedBlock.data.text = 'Untitled Header';
+        }
+        if (!validatedBlock.data.level || validatedBlock.data.level < 1 || validatedBlock.data.level > 6) {
+          validatedBlock.data.level = 2;
+        }
+        break;
+      
+      case 'paragraph':
+        if (!validatedBlock.data.text) {
+          validatedBlock.data.text = 'Empty paragraph';
+        }
+        break;
+      
+      case 'list':
+        if (!Array.isArray(validatedBlock.data.items)) {
+          validatedBlock.data.items = [];
+        }
+        if (!validatedBlock.data.style || !['ordered', 'unordered'].includes(validatedBlock.data.style)) {
+          validatedBlock.data.style = 'unordered';
+        }
+        break;
+      
+      case 'quote':
+        if (!validatedBlock.data.text) {
+          validatedBlock.data.text = 'Empty quote';
+        }
+        break;
+      
+      default:
+        // For unknown block types, convert to paragraph
+        if (!validatedBlock.data.text) {
+          validatedBlock.data.text = 'Content block';
+        }
+        validatedBlock.type = 'paragraph';
+        break;
+    }
+
+    return validatedBlock;
+  }).filter(block => block !== null);
+
+  return {
+    blocks: validatedBlocks
+  };
 }
