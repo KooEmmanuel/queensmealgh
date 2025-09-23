@@ -241,7 +241,7 @@ export const Editor = memo(({
 
       // Wait for DOM element to be available with more robust checking
       let attempts = 0;
-      const maxAttempts = 50; // Increased attempts
+      const maxAttempts = 100; // Increased attempts
       let holderElement = null;
       
       while (attempts < maxAttempts && !holderElement) {
@@ -256,8 +256,19 @@ export const Editor = memo(({
           }
         }
         
+        // Try to find by data attribute as well
         if (!holderElement) {
-          await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay for faster response
+          const elementsByData = document.querySelectorAll(`[data-editor-ready]`);
+          for (const el of elementsByData) {
+            if (el.id === holderIdRef.current) {
+              holderElement = el as HTMLElement;
+              break;
+            }
+          }
+        }
+        
+        if (!holderElement) {
+          await new Promise(resolve => setTimeout(resolve, 25)); // Reduced delay for faster response
           attempts++;
         }
       }
@@ -272,16 +283,28 @@ export const Editor = memo(({
         console.log('Attempting to create fallback element...');
         const fallbackElement = document.createElement('div');
         fallbackElement.id = holderIdRef.current;
-        fallbackElement.className = 'prose max-w-none';
+        fallbackElement.className = 'w-full';
         fallbackElement.style.minHeight = `${minHeight}px`;
+        fallbackElement.style.margin = '0';
+        fallbackElement.style.padding = '0';
+        fallbackElement.setAttribute('data-editor-ready', 'false');
         if (maxHeight) {
           fallbackElement.style.maxHeight = `${maxHeight}px`;
           fallbackElement.style.overflowY = 'auto';
         }
         
-        // Try to append to body or find a suitable parent
-        const targetParent = document.body || document.documentElement;
-        targetParent.appendChild(fallbackElement);
+        // Try to find the parent container first
+        const parentContainer = document.querySelector('.min-h-\\[250px\\]') || 
+                               document.querySelector('.min-h-\\[300px\\]') ||
+                               document.querySelector('.min-h-\\[400px\\]');
+        
+        if (parentContainer) {
+          parentContainer.appendChild(fallbackElement);
+        } else {
+          // Fallback to body
+          const targetParent = document.body || document.documentElement;
+          targetParent.appendChild(fallbackElement);
+        }
         holderElement = fallbackElement;
         
         if (!holderElement) {
@@ -492,10 +515,13 @@ export const Editor = memo(({
         requestAnimationFrame(() => {
           // Double RAF to ensure the element is in the DOM
           requestAnimationFrame(() => {
-            // Additional small delay to ensure everything is ready
-            setTimeout(() => {
-              initializeEditor();
-            }, 50);
+            // Triple RAF to ensure the element is fully rendered
+            requestAnimationFrame(() => {
+              // Additional small delay to ensure everything is ready
+              setTimeout(() => {
+                initializeEditor();
+              }, 50);
+            });
           });
         });
       }, 100);
@@ -503,6 +529,16 @@ export const Editor = memo(({
     
     initializeWithDelay();
   }, [initializeEditor, isMounted]);
+
+  // Also try to initialize immediately when the element is rendered
+  useEffect(() => {
+    if (isMounted && !editorInstanceRef.current && !hasError) {
+      const timer = setTimeout(() => {
+        initializeEditor();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isMounted, initializeEditor, hasError]);
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -596,7 +632,16 @@ export const Editor = memo(({
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+      <div 
+        className="w-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
+        style={{
+          minHeight: `${minHeight}px`,
+          maxHeight: maxHeight ? `${maxHeight}px` : 'none',
+          overflowY: maxHeight ? 'auto' : 'visible',
+          margin: 0,
+          padding: 0
+        }}
+      >
         <div className="text-gray-600">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p>Loading editor...</p>
@@ -620,6 +665,14 @@ export const Editor = memo(({
         // Ensure the element is properly set up
         if (el) {
           el.setAttribute('data-editor-ready', 'false');
+          // Force the element to be in the DOM
+          el.style.display = 'block';
+          // Try to initialize immediately if not already done
+          if (isMounted && !editorInstanceRef.current && !hasError) {
+            setTimeout(() => {
+              initializeEditor();
+            }, 10);
+          }
         }
       }}
     />
