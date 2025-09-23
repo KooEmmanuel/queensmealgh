@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, memo, useCallback, useState, useMemo } from 'react';
-import EditorJS, { OutputData, EditorConfig, LogLevels } from '@editorjs/editorjs';
+import EditorJS, { OutputData, EditorConfig } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
 import Paragraph from '@editorjs/paragraph';
@@ -104,7 +104,7 @@ export const Editor = memo(({
 }: EditorProps) => {
   const editorInstanceRef = useRef<EditorJS | null>(null);
   const isReadyRef = useRef(false);
-  const holderIdRef = useRef(holder);
+  const holderIdRef = useRef(holder || 'editorjs-container');
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const { toast } = useToast();
@@ -241,7 +241,6 @@ export const Editor = memo(({
         readOnly: readOnly,
         data: validatedData,
         minHeight: minHeight,
-        logLevel: process.env.NODE_ENV === 'development' ? LogLevels.WARN : LogLevels.ERROR,
         tools: {
           header: {
             class: Header,

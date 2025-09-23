@@ -219,31 +219,32 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
   return (
     <div className="min-h-screen bg-white">
       {/* Top navigation bar */}
-      <div className="sticky top-0 z-10 border-b bg-white px-4 sm:px-6">
-        <div className="flex h-16 items-center justify-between">
+      <div className="sticky top-0 z-10 border-b bg-white px-2 sm:px-4 lg:px-6">
+        <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Left side: Back button, Author */}
           <div className="flex items-center">
-            <Link href="/admin/blog" className="mr-4">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
+            <Link href="/admin/blog" className="mr-2 sm:mr-4">
+              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
             <div className="flex items-center">
-              <Avatar className="h-8 w-8 mr-2">
+              <Avatar className="h-6 w-6 sm:h-8 sm:w-8 mr-1 sm:mr-2">
                 <AvatarImage src={author.avatar} alt={author.name} />
-                <AvatarFallback>{author.name?.[0]}</AvatarFallback>
+                <AvatarFallback className="text-xs">{author.name?.[0]}</AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium">{author.name}</span>
+              <span className="text-xs sm:text-sm font-medium hidden sm:block">{author.name}</span>
             </div>
           </div>
 
           {/* Right side: Category Dropdown, Save Button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  {category}
-                  <ChevronDown className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="flex items-center gap-1 text-xs sm:text-sm px-2 sm:px-3">
+                  <span className="hidden sm:inline">{category}</span>
+                  <span className="sm:hidden">{category.slice(0, 3)}</span>
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -258,32 +259,40 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
             <Button
               onClick={handleSave}
               disabled={isSubmitting}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-4"
             >
-              {isSubmitting ? 'Saving...' : <><Save className="h-4 w-4 mr-2" />Save Changes</>}
+              {isSubmitting ? (
+                <span className="text-xs sm:text-sm">Saving...</span>
+              ) : (
+                <>
+                  <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Save Changes</span>
+                  <span className="sm:hidden">Save</span>
+                </>
+              )}
             </Button>
           </div>
         </div>
       </div>
 
       {/* Main content area */}
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Cover image section */}
         {coverImage ? (
-          <div className="relative mb-8 rounded-lg overflow-hidden aspect-[2/1] w-full">
+          <div className="relative mb-6 sm:mb-8 rounded-lg overflow-hidden aspect-[2/1] w-full">
             <Image src={coverImage} alt="Cover" fill className="object-cover" />
-            <Button variant="destructive" size="sm" className="absolute top-4 right-4" onClick={removeCoverImage}>
-              <X className="h-4 w-4" />
+            <Button variant="destructive" size="sm" className="absolute top-2 right-2 sm:top-4 sm:right-4 h-6 w-6 sm:h-8 sm:w-8" onClick={removeCoverImage}>
+              <X className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         ) : (
-          <div className="mb-8 rounded-lg border-2 border-dashed border-gray-200 p-12 text-center">
-            <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <label htmlFor="cover-upload" className="mt-4 relative cursor-pointer rounded-md bg-white font-semibold text-green-600 hover:text-green-500">
+          <div className="mb-6 sm:mb-8 rounded-lg border-2 border-dashed border-gray-200 p-6 sm:p-12 text-center">
+            <ImageIcon className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+            <label htmlFor="cover-upload" className="mt-2 sm:mt-4 relative cursor-pointer rounded-md bg-white font-semibold text-green-600 hover:text-green-500 text-sm sm:text-base">
               <span>Upload a cover image</span>
               <input id="cover-upload" type="file" accept="image/*" className="sr-only" onChange={handleCoverImageUpload} />
             </label>
-            <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+            <p className="text-xs leading-5 text-gray-600 mt-1">PNG, JPG, GIF up to 10MB</p>
           </div>
         )}
 
@@ -294,17 +303,18 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Post Title"
-          className="w-full border-none text-4xl font-bold focus:outline-none focus:ring-0 mb-8"
+          className="w-full border-none text-2xl sm:text-3xl lg:text-4xl font-bold focus:outline-none focus:ring-0 mb-6 sm:mb-8"
         />
 
         {/* Editor.js Instance */}
-        <div className="editor-wrapper prose max-w-none min-h-[300px]"> {/* Added wrapper and prose */}
+        <div className="editor-wrapper prose max-w-none min-h-[250px] sm:min-h-[300px] w-full overflow-x-auto"> {/* Added wrapper and prose */}
            <Editor
              // Use editorData state which holds the fetched content
              data={editorData}
              // Update editorData state when content changes
              onChange={setEditorData}
              placeholder="Start writing your blog post..."
+             holder="admin-blog-editor"
            />
         </div>
       </div>
