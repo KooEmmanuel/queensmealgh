@@ -283,7 +283,7 @@ export default function NewBlogPostPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
-          className="w-full border-none text-2xl sm:text-3xl lg:text-4xl font-bold focus:outline-none focus:ring-0 mb-6 sm:mb-8"
+          className="w-full border-none text-2xl sm:text-3xl lg:text-4xl font-bold focus:outline-none focus:ring-0 mb-4"
         />
         
         {/* Editor.js */}

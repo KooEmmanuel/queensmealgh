@@ -303,7 +303,7 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Post Title"
-          className="w-full border-none text-2xl sm:text-3xl lg:text-4xl font-bold focus:outline-none focus:ring-0 mb-6 sm:mb-8"
+          className="w-full border-none text-2xl sm:text-3xl lg:text-4xl font-bold focus:outline-none focus:ring-0 mb-4"
         />
 
         {/* Editor.js Instance */}
