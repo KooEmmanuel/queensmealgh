@@ -30,22 +30,41 @@ const renderEditorJsContent = (contentInput: string | object) => {
       return contentData.blocks.map((block: any) => {
         switch (block.type) {
           case 'paragraph':
-            return <p key={block.id} dangerouslySetInnerHTML={{ __html: block.data.text }}></p>;
+            return (
+              <p key={block.id} className="text-gray-700 leading-relaxed mb-6 text-lg">
+                <span dangerouslySetInnerHTML={{ __html: block.data.text }}></span>
+              </p>
+            );
           case 'header':
             const headerTag = `h${block.data.level}`;
+            const headerClasses = {
+              1: "text-4xl font-bold text-gray-900 mb-8 mt-12",
+              2: "text-3xl font-bold text-gray-900 mb-6 mt-10",
+              3: "text-2xl font-semibold text-gray-800 mb-4 mt-8",
+              4: "text-xl font-semibold text-gray-800 mb-3 mt-6",
+              5: "text-lg font-semibold text-gray-800 mb-3 mt-4",
+              6: "text-base font-semibold text-gray-800 mb-2 mt-4"
+            };
             return React.createElement(headerTag as string, {
               key: block.id,
+              className: headerClasses[block.data.level as keyof typeof headerClasses] || headerClasses[2],
               dangerouslySetInnerHTML: { __html: block.data.text }
             });
           case 'list':
             const listTag = block.data.style === 'ordered' ? 'ol' : 'ul';
             return React.createElement(listTag as string, {
               key: block.id,
-              className: "list-disc list-inside pl-5"
+              className: block.data.style === 'ordered' ? "list-decimal list-inside pl-6 my-4 space-y-2" : "list-disc list-inside pl-6 my-4 space-y-2"
             },
-              block.data.items.map((item: string, index: number) => (
-                <li key={index} dangerouslySetInnerHTML={{ __html: item }}></li>
-              ))
+              block.data.items.map((item: any, index: number) => {
+                // Handle both string and object items
+                const itemText = typeof item === 'string' ? item : (item.text || item.content || JSON.stringify(item));
+                return (
+                  <li key={index} className="text-gray-700 leading-relaxed">
+                    <span dangerouslySetInnerHTML={{ __html: itemText }}></span>
+                  </li>
+                );
+              })
             );
           case 'image':
              if (block.data && block.data.file && block.data.file.url) {
@@ -109,6 +128,15 @@ const renderEditorJsContent = (contentInput: string | object) => {
                  </ul>
                </div>
              );
+          case 'quote':
+            return (
+              <blockquote key={block.id} className="border-l-4 border-green-500 pl-8 py-6 my-8 bg-green-50 rounded-r-lg">
+                <p className="text-gray-700 italic text-xl leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: block.data.text }}></p>
+                {block.data.caption && (
+                  <cite className="text-sm text-gray-600 mt-4 block font-medium">— {block.data.caption}</cite>
+                )}
+              </blockquote>
+            );
           case 'delimiter':
              return (
                <div key={block.id} className="my-8 flex justify-center">
@@ -117,8 +145,8 @@ const renderEditorJsContent = (contentInput: string | object) => {
              );
           case 'code':
              return (
-               <div key={block.id} className="my-4">
-                 <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+               <div key={block.id} className="my-8">
+                 <pre className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto text-sm leading-relaxed">
                    <code>{block.data.code}</code>
                  </pre>
                </div>
@@ -143,13 +171,13 @@ const renderEditorJsContent = (contentInput: string | object) => {
              );
           case 'table':
              return (
-               <div key={block.id} className="my-6 overflow-x-auto">
-                 <table className="min-w-full border border-gray-300">
+               <div key={block.id} className="my-8 overflow-x-auto">
+                 <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
                    <tbody>
                      {block.data.content.map((row: string[], rowIndex: number) => (
-                       <tr key={rowIndex}>
+                       <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                          {row.map((cell: string, cellIndex: number) => (
-                           <td key={cellIndex} className="border border-gray-300 px-4 py-2">
+                           <td key={cellIndex} className="border border-gray-200 px-6 py-4 text-sm text-gray-700">
                              {cell}
                            </td>
                          ))}
@@ -255,107 +283,134 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="relative h-[40vh] md:h-[50vh] bg-gray-200">
-        {post.coverImage ? (
-          <Image
-            src={post.coverImage}
-            alt={post.title}
-            fill
-            className="object-cover"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            No Header Image
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white z-10">
+    <div className="min-h-screen bg-white">
+      {/* Navigation Header */}
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <Link href="/blog">
-            <Button variant="ghost" className="text-white hover:text-white hover:bg-white/20 mb-4">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Blog
             </Button>
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">{post.title}</h1>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <span className="flex items-center">
-              <User className="h-4 w-4 mr-1" />
-              {post.author.name}
-            </span>
-            <span className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1" />
-              {new Date(post.createdAt).toLocaleDateString()}
-            </span>
-            {post.category && (
-              <span className="flex items-center">
-                <Tag className="h-4 w-4 mr-1" />
-                {post.category}
-              </span>
-            )}
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <div className="relative">
+        {post.coverImage ? (
+          <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+            <Image
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          </div>
+        ) : (
+          <div className="h-[30vh] bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{post.title}</h1>
+            </div>
+          </div>
+        )}
+        
+        {/* Article Header */}
+        <div className="max-w-4xl mx-auto px-4 -mt-20 relative z-10">
+          <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                {post.title}
+              </h1>
+              
+              {post.excerpt && (
+                <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-8">
+                  {post.excerpt}
+                </p>
+              )}
+              
+              {/* Article Meta */}
+              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2" />
+                  <span className="font-medium">{post.author.name}</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <span>{new Date(post.createdAt).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+                {post.category && (
+                  <div className="flex items-center">
+                    <Tag className="h-4 w-4 mr-2" />
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                      {post.category}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Article Content */}
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <article className="prose prose-lg prose-gray max-w-none">
+          {renderEditorJsContent(post.content)}
+        </article>
+        
+        {/* Author Bio */}
+        <div className="mt-16 p-8 bg-gray-50 rounded-2xl">
+          <div className="flex items-start space-x-6">
+            <div className="flex-shrink-0">
+              <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden">
+                {post.author.avatar ? (
+                  <Image
+                    src={post.author.avatar}
+                    alt={post.author.name}
+                    width={64}
+                    height={64}
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-green-500 text-white font-bold text-xl">
+                    {post.author.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">About {post.author.name}</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Food enthusiast and recipe creator passionate about sharing delicious Ghanaian cuisine with the world.
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Share2 className="h-4 w-4" />
+                Share Article
+              </Button>
+            </div>
           </div>
         </div>
       </div>
       
-      <div className="container mx-auto px-4 md:px-6 py-12">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 mb-8">
-            <div className="prose prose-lg max-w-none">
-              {post.excerpt && (
-                 <p className="lead text-gray-700 mb-6 font-medium">{post.excerpt}</p>
-              )}
-              {renderEditorJsContent(post.content)}
-            </div>
-            
-            <div className="border-t border-gray-100 mt-8 pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-gray-200 mr-3 overflow-hidden flex-shrink-0">
-                    {post.author.avatar ? (
-                      <Image
-                        src={post.author.avatar}
-                        alt={post.author.name}
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-green-500 text-white font-semibold">
-                        {post.author.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium">{post.author.name}</p>
-                    <p className="text-sm text-gray-500">Author</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center mb-12">
-            <Link href="/blog">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Blog
-              </Button>
-            </Link>
-          </div>
-          
-          <div className="border-t pt-8">
-            <RelatedPosts 
-              currentPostId={params.id} 
-              category={post.category || ''} 
-            />
-          </div>
+      {/* Related Posts */}
+      <div className="bg-gray-50 py-16">
+        <div className="max-w-4xl mx-auto px-4">
+          <RelatedPosts 
+            currentPostId={params.id} 
+            category={post.category || ''} 
+          />
         </div>
       </div>
+      
       <Footer />
     </div>
   );
