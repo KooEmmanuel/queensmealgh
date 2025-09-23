@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { broadcastUpdate } from '../events/route';
 
 // POST - Add a comment to a thread
 export async function POST(request: Request) {
@@ -35,14 +36,18 @@ export async function POST(request: Request) {
       author: user.username,
       authorId: new ObjectId(authorId),
       createdAt: new Date(),
-      likes: 0
+      likes: 0,
+      authorDisplayName: user.displayName,
+      authorAvatar: user.avatar,
+      authorReputation: user.reputation
     };
     
     const result = await db.collection('threads').updateOne(
       { _id: new ObjectId(threadId) },
       { 
         $push: { comments: comment },
-        $inc: { comments: 1 }
+        $inc: { commentCount: 1 },
+        $set: { lastActivity: new Date() }
       }
     );
     
@@ -52,6 +57,12 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+    
+    // Broadcast the new comment to all connected clients
+    broadcastUpdate('new_comment', {
+      threadId,
+      comment
+    });
     
     return NextResponse.json({ success: true, comment }, { status: 201 });
   } catch (error) {

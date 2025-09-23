@@ -17,7 +17,8 @@ import {
   Heart,
   Calendar,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 
 interface UserProfile {
@@ -50,6 +51,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
     username: '',
     displayName: '',
     email: '',
+    password: '',
     bio: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -100,10 +102,10 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
   };
 
   const handleRegister = async () => {
-    if (!formData.username || !formData.displayName) {
+    if (!formData.username || !formData.displayName || !formData.email || !formData.password) {
       toast({
         title: "Missing Information",
-        description: "Please fill in username and display name",
+        description: "Please fill in all required fields",
         variant: "destructive"
       });
       return;
@@ -113,6 +115,15 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
       toast({
         title: "Username too short",
         description: "Username must be at least 3 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters",
         variant: "destructive"
       });
       return;
@@ -144,7 +155,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
         localStorage.setItem('community-user', JSON.stringify(user));
         onUserLogin(user);
         setIsRegisterOpen(false);
-        setFormData({ username: '', displayName: '', email: '', bio: '' });
+        setFormData({ username: '', displayName: '', email: '', password: '', bio: '' });
         setUsernameAvailable(null);
         
         toast({
@@ -167,10 +178,10 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
   };
 
   const handleLogin = async () => {
-    if (!formData.username) {
+    if (!formData.email || !formData.password) {
       toast({
-        title: "Username required",
-        description: "Please enter your username",
+        title: "Missing Information",
+        description: "Please enter your email and password",
         variant: "destructive"
       });
       return;
@@ -183,7 +194,10 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: formData.username }),
+        body: JSON.stringify({ 
+          email: formData.email,
+          password: formData.password 
+        }),
       });
 
       const data = await response.json();
@@ -193,7 +207,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
         localStorage.setItem('community-user', JSON.stringify(user));
         onUserLogin(user);
         setIsLoginOpen(false);
-        setFormData({ username: '', displayName: '', email: '', bio: '' });
+        setFormData({ username: '', displayName: '', email: '', password: '', bio: '' });
         
         toast({
           title: "Welcome back!",
@@ -206,7 +220,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
       console.error('Login error:', error);
       toast({
         title: "Login Failed",
-        description: (error as Error).message || "Please check your username",
+        description: (error as Error).message || "Please check your credentials",
         variant: "destructive"
       });
     } finally {
@@ -301,28 +315,42 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
   return (
     <div className="space-y-4">
       {/* Login Form */}
-      <Card>
+      <Card className="border border-gray-200 bg-white">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg sm:text-xl">Join the Community</CardTitle>
-          <CardDescription className="text-sm">
+          <CardTitle className="text-lg sm:text-xl text-gradient-green-orange">Join the Community</CardTitle>
+          <CardDescription className="text-sm text-gray-600">
             Connect with fellow food enthusiasts and share your culinary experiences
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="login-username">Username</Label>
+            <Label htmlFor="login-email" className="text-sm font-medium text-gray-700">Email</Label>
             <Input
-              id="login-username"
-              placeholder="Enter your username"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              id="login-email"
+              type="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="border-orange-200 focus:border-green-500 focus:ring-green-500"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="login-password" className="text-sm font-medium text-gray-700">Password</Label>
+            <Input
+              id="login-password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="border-orange-200 focus:border-green-500 focus:ring-green-500"
             />
           </div>
           
           <Button 
             onClick={handleLogin}
-            disabled={isLoading || !formData.username}
-            className="w-full"
+            disabled={isLoading || !formData.email || !formData.password}
+            className="w-full bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700 text-white font-medium"
           >
             {isLoading ? (
               <>
@@ -338,7 +366,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
             <Button
               variant="link"
               onClick={() => setIsRegisterOpen(true)}
-              className="text-sm"
+              className="text-sm text-green-600 hover:text-green-700"
             >
               Don't have an account? Register here
             </Button>
@@ -348,22 +376,23 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
 
       {/* Register Modal */}
       {isRegisterOpen && (
-        <Card>
+        <Card className="border border-gray-200 bg-white">
           <CardHeader>
-            <CardTitle className="text-lg">Create Account</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg text-gradient-green-orange">Create Account</CardTitle>
+            <CardDescription className="text-gray-600">
               Join our community and start sharing your food stories
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="register-username">Username *</Label>
+              <Label htmlFor="register-username" className="text-sm font-medium text-gray-700">Username *</Label>
               <div className="relative">
                 <Input
                   id="register-username"
                   placeholder="Choose a unique username"
                   value={formData.username}
                   onChange={(e) => handleUsernameChange(e.target.value)}
+                  className="border-green-200 focus:border-orange-500 focus:ring-orange-500"
                 />
                 {checkingUsername && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -390,41 +419,56 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="register-display">Display Name *</Label>
+              <Label htmlFor="register-display" className="text-sm font-medium text-gray-700">Display Name *</Label>
               <Input
                 id="register-display"
                 placeholder="How should others see your name?"
                 value={formData.displayName}
                 onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                className="border-green-200 focus:border-orange-500 focus:ring-orange-500"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="register-email">Email (optional)</Label>
+              <Label htmlFor="register-email" className="text-sm font-medium text-gray-700">Email *</Label>
               <Input
                 id="register-email"
                 type="email"
                 placeholder="your@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="border-green-200 focus:border-orange-500 focus:ring-orange-500"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="register-bio">Bio (optional)</Label>
+              <Label htmlFor="register-password" className="text-sm font-medium text-gray-700">Password *</Label>
+              <Input
+                id="register-password"
+                type="password"
+                placeholder="Create a secure password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="border-green-200 focus:border-orange-500 focus:ring-orange-500"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="register-bio" className="text-sm font-medium text-gray-700">Bio (optional)</Label>
               <Input
                 id="register-bio"
                 placeholder="Tell us about yourself..."
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                className="border-green-200 focus:border-orange-500 focus:ring-orange-500"
               />
             </div>
             
             <div className="flex gap-2">
               <Button 
                 onClick={handleRegister}
-                disabled={isLoading || usernameAvailable === false || !formData.username || !formData.displayName}
-                className="flex-1"
+                disabled={isLoading || usernameAvailable === false || !formData.username || !formData.displayName || !formData.email || !formData.password}
+                className="flex-1 bg-gradient-to-r from-orange-600 to-green-600 hover:from-orange-700 hover:to-green-700 text-white font-medium"
               >
                 {isLoading ? (
                   <>
@@ -439,7 +483,7 @@ export function UserAuth({ onUserLogin, onUserLogout, currentUser }: UserAuthPro
               <Button
                 variant="outline"
                 onClick={() => setIsRegisterOpen(false)}
-                className="flex-1"
+                className="flex-1 border-orange-200 text-orange-600 hover:bg-orange-50"
               >
                 Cancel
               </Button>

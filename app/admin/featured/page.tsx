@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { EnhancedAIContentGenerator } from "@/components/EnhancedAIContentGenerator";
+import { convertImageUrlToBase64 } from "@/lib/imageUtils";
 
 interface FeaturedContent {
   _id: string;
@@ -383,9 +384,28 @@ export default function FeaturedContentPage() {
                           setInstructions(content.instructions);
                         }
                       }}
-                      onImageGenerated={(imageUrl) => {
-                        setImageBase64(imageUrl);
-                        setPreviewUrl(imageUrl);
+                      onImageGenerated={async (imageUrl) => {
+                        try {
+                          console.log('Received image URL from AI:', imageUrl);
+                          
+                          // Convert AI-generated image URL to base64 using utility function
+                          const base64 = await convertImageUrlToBase64(imageUrl);
+                          
+                          setImageBase64(base64);
+                          setPreviewUrl(base64);
+                          
+                          toast({
+                            title: "Image Processed!",
+                            description: "AI-generated image has been converted and is ready to use.",
+                          });
+                        } catch (error) {
+                          console.error('Error converting image to base64:', error);
+                          toast({
+                            title: "Image Conversion Failed",
+                            description: error instanceof Error ? error.message : "Failed to process the AI-generated image. Please try again.",
+                            variant: "destructive"
+                          });
+                        }
                       }}
                     />
                   </div>

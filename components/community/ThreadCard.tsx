@@ -1,5 +1,6 @@
 "use client";
 import { useState } from 'react';
+import { Thread, Comment, Reply as ReplyType } from '@/types/community';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +8,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Heart, 
   MessageSquare, 
@@ -17,6 +25,8 @@ import {
   Flag,
   Bookmark,
   ThumbsUp,
+  Copy,
+  ExternalLink,
   ThumbsDown,
   Eye,
   Clock,
@@ -27,53 +37,6 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
-interface Comment {
-  _id: string;
-  content: string;
-  author: string;
-  authorDisplayName: string;
-  authorAvatar?: string;
-  authorReputation: number;
-  authorBadges: string[];
-  createdAt: string;
-  likes: number;
-  replies: Reply[];
-  isLiked?: boolean;
-}
-
-interface Reply {
-  _id: string;
-  content: string;
-  author: string;
-  authorDisplayName: string;
-  authorAvatar?: string;
-  authorReputation: number;
-  createdAt: string;
-  likes: number;
-  isLiked?: boolean;
-}
-
-interface Thread {
-  _id: string;
-  title: string;
-  content: string;
-  author: string;
-  authorDisplayName: string;
-  authorAvatar?: string;
-  authorReputation: number;
-  authorBadges: string[];
-  category: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  likes: number;
-  views: number;
-  comments: Comment[];
-  isLiked?: boolean;
-  isBookmarked?: boolean;
-  isPinned?: boolean;
-  isLocked?: boolean;
-}
 
 interface ThreadCardProps {
   thread: Thread;
@@ -81,6 +44,7 @@ interface ThreadCardProps {
   onLike: (threadId: string) => void;
   onComment: (threadId: string, content: string) => void;
   onReply: (commentId: string, content: string) => void;
+  onCommentLike: (commentId: string) => void;
   onBookmark: (threadId: string) => void;
   onShare: (thread: Thread) => void;
   onReport: (threadId: string) => void;
@@ -92,14 +56,16 @@ export function ThreadCard({
   onLike, 
   onComment, 
   onReply, 
+  onCommentLike,
   onBookmark, 
   onShare, 
   onReport 
 }: ThreadCardProps) {
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [newReplies, setNewReplies] = useState<{[key: string]: string}>({});
   const [showReplyForm, setShowReplyForm] = useState<{[key: string]: boolean}>({});
+  const [showReplies, setShowReplies] = useState<{[key: string]: boolean}>({});
   const { toast } = useToast();
 
   const getReputationBadge = (reputation: number) => {
@@ -128,17 +94,68 @@ export function ThreadCard({
     setShowReplyForm({ ...showReplyForm, [commentId]: !showReplyForm[commentId] });
   };
 
+  const toggleReplies = (commentId: string) => {
+    setShowReplies({ ...showReplies, [commentId]: !showReplies[commentId] });
+  };
+
+  const handleReportThread = async () => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to report threads.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/community/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          threadId: thread._id,
+          reporterId: currentUser._id,
+          reason: 'inappropriate_content', // Default reason, could be made configurable
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "Thread Reported",
+          description: "Thank you for your report. We'll review it shortly.",
+        });
+      } else {
+        toast({
+          title: "Report Failed",
+          description: data.error || "Failed to report thread. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error reporting thread:', error);
+      toast({
+        title: "Report Failed",
+        description: "Failed to report thread. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const authorBadge = getReputationBadge(thread.authorReputation);
   const BadgeIcon = authorBadge.icon;
 
   return (
-    <Card className="w-full hover:shadow-md transition-shadow">
+    <Card className="w-full border border-gray-200 bg-white hover:border-gray-300 transition-all duration-300">
       <CardHeader className="pb-3 p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
               <AvatarImage src={thread.authorAvatar} alt={thread.authorDisplayName} />
-              <AvatarFallback className="bg-green-100 text-green-800 text-xs sm:text-sm">
+              <AvatarFallback className="bg-gradient-to-br from-green-400 to-orange-400 text-white text-xs sm:text-sm font-bold">
                 {thread.authorDisplayName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -148,7 +165,7 @@ export function ThreadCard({
                 <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
                   {thread.authorDisplayName}
                 </h3>
-                {thread.authorBadges.includes('verified') && (
+                {thread.authorBadges && thread.authorBadges.includes('verified') && (
                   <CheckCircle className="h-4 w-4 text-blue-500" />
                 )}
                 <Badge className={`${authorBadge.color} text-xs`}>
@@ -181,9 +198,32 @@ export function ThreadCard({
                 🔒 Locked
               </Badge>
             )}
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy Link
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.open(window.location.href, '_blank')}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open in New Tab
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Bookmark className="mr-2 h-4 w-4" />
+                  Save Thread
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReportThread}>
+                  <Flag className="mr-2 h-4 w-4" />
+                  Report Thread
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
@@ -221,38 +261,38 @@ export function ThreadCard({
           </div>
           <div className="flex items-center gap-1">
             <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-            {thread.comments.length} comments
+            {thread.comments?.length || 0} comments
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-3 border-t border-orange-100">
           <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant={thread.isLiked ? "default" : "outline"}
               size="sm"
               onClick={() => onLike(thread._id)}
-              className={`${thread.isLiked ? "bg-red-500 hover:bg-red-600" : ""} h-8 sm:h-9 px-2 sm:px-3`}
+              className={`${thread.isLiked ? "bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white" : "border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300"} h-8 sm:h-9 px-2 sm:px-3 font-medium transition-all duration-300`}
             >
               <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${thread.isLiked ? "fill-current" : ""} ${thread.likes > 0 ? "mr-1" : ""}`} />
-              {thread.likes > 0 && <span className="text-xs sm:text-sm">{thread.likes}</span>}
+              {thread.likes > 0 && <span className="text-xs sm:text-sm font-medium">{thread.likes}</span>}
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowComments(!showComments)}
-              className="h-8 sm:h-9 px-2 sm:px-3"
+              className="border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 h-8 sm:h-9 px-2 sm:px-3 font-medium transition-all duration-300"
             >
               <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-              <span className="hidden sm:inline">Comment</span>
+              <span className="hidden sm:inline">{showComments ? 'Hide Comments' : 'Show Comments'}</span>
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               onClick={() => onBookmark(thread._id)}
-              className={`${thread.isBookmarked ? "bg-yellow-50 border-yellow-200" : ""} h-8 sm:h-9 px-2 sm:px-3`}
+              className={`${thread.isBookmarked ? "bg-gradient-to-r from-yellow-400 to-orange-400 text-white border-yellow-400" : "border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300"} h-8 sm:h-9 px-2 sm:px-3 font-medium transition-all duration-300`}
             >
               <Bookmark className={`h-3 w-3 sm:h-4 sm:w-4 ${thread.isBookmarked ? "fill-current" : ""}`} />
             </Button>
@@ -263,7 +303,7 @@ export function ThreadCard({
               variant="ghost"
               size="sm"
               onClick={() => onShare(thread)}
-              className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+              className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 w-8 sm:h-9 sm:w-9 p-0 transition-all duration-300"
             >
               <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
@@ -272,7 +312,7 @@ export function ThreadCard({
               variant="ghost"
               size="sm"
               onClick={() => onReport(thread._id)}
-              className="text-red-600 hover:text-red-700 h-8 w-8 sm:h-9 sm:w-9 p-0"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 sm:h-9 sm:w-9 p-0 transition-all duration-300"
             >
               <Flag className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
@@ -319,7 +359,7 @@ export function ThreadCard({
 
             {/* Comments List */}
             <div className="space-y-4">
-              {thread.comments.map((comment) => {
+              {thread.comments && thread.comments.length > 0 ? thread.comments.map((comment) => {
                 const commentAuthorBadge = getReputationBadge(comment.authorReputation);
                 const CommentBadgeIcon = commentAuthorBadge.icon;
 
@@ -339,7 +379,7 @@ export function ThreadCard({
                           <span className="font-medium text-sm text-gray-900">
                             {comment.authorDisplayName}
                           </span>
-                          {comment.authorBadges.includes('verified') && (
+                          {comment.authorBadges && comment.authorBadges.includes('verified') && (
                             <CheckCircle className="h-3 w-3 text-blue-500" />
                           )}
                           <Badge className={`${commentAuthorBadge.color} text-xs`}>
@@ -360,7 +400,7 @@ export function ThreadCard({
                             variant="ghost"
                             size="sm"
                             className="h-6 px-2 text-xs"
-                            onClick={() => onLike(comment._id)}
+                            onClick={() => onCommentLike(comment._id)}
                           >
                             <ThumbsUp className={`h-3 w-3 mr-1 ${comment.isLiked ? "fill-current" : ""}`} />
                             {comment.likes}
@@ -423,13 +463,24 @@ export function ThreadCard({
 
                     {/* Replies */}
                     {comment.replies && comment.replies.length > 0 && (
-                      <div className="ml-11 space-y-2">
-                        {comment.replies.map((reply) => {
+                      <div className="ml-11">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleReplies(comment._id)}
+                          className="h-6 px-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 mb-2"
+                        >
+                          {showReplies[comment._id] ? 'Hide' : 'Show'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+                        </Button>
+                        
+                        {(showReplies[comment._id] !== false) && (
+                          <div className="space-y-2">
+                            {comment.replies.map((reply) => {
                           const replyAuthorBadge = getReputationBadge(reply.authorReputation);
                           const ReplyBadgeIcon = replyAuthorBadge.icon;
 
                           return (
-                            <div key={reply._id} className="flex gap-2">
+                            <div key={reply._id} className="flex gap-3 ml-4 border-l-2 border-gray-100 pl-3 py-2">
                               <Avatar className="h-6 w-6 flex-shrink-0">
                                 <AvatarImage src={reply.authorAvatar} alt={reply.authorDisplayName} />
                                 <AvatarFallback className="bg-gray-100 text-gray-800 text-xs">
@@ -451,28 +502,34 @@ export function ThreadCard({
                                   </span>
                                 </div>
                                 
-                                <p className="text-xs text-gray-700 leading-relaxed">
+                                <p className="text-xs text-gray-700 leading-relaxed mb-2">
                                   {reply.content}
                                 </p>
                                 
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-5 px-1 text-xs mt-1"
+                                  className="h-6 px-2 text-xs hover:bg-gray-100"
                                   onClick={() => onLike(reply._id)}
                                 >
-                                  <ThumbsUp className={`h-3 w-3 mr-1 ${reply.isLiked ? "fill-current" : ""}`} />
-                                  {reply.likes}
+                                  <ThumbsUp className={`h-3 w-3 mr-1 ${reply.isLiked ? "fill-current text-blue-600" : "text-gray-500"}`} />
+                                  {reply.likes > 0 && <span className="text-xs">{reply.likes}</span>}
                                 </Button>
                               </div>
                             </div>
                           );
-                        })}
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 );
-              })}
+              }) : (
+                <div className="text-center text-gray-500 py-4">
+                  No comments yet. Be the first to comment!
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { isValidBase64Image, getImageFormat, getBase64Size } from '@/lib/imageUtils';
 import { ObjectId } from 'mongodb';
 
 // GET - Fetch featured content
@@ -37,7 +38,9 @@ export async function POST(request: Request) {
     console.log("Received data:", { 
       title, 
       description: description?.substring(0, 20) + "...", 
-      imageBase64: imageBase64?.substring(0, 20) + "...",
+      imageBase64: imageBase64?.substring(0, 50) + "...",
+      imageBase64Length: imageBase64?.length,
+      imageBase64Prefix: imageBase64?.substring(0, 20),
       ingredients,
       instructions
     });
@@ -49,10 +52,25 @@ export async function POST(request: Request) {
       );
     }
     
-    // Validate base64 image
-    if (!imageBase64.startsWith('data:image/')) {
+    // Validate base64 image using utility function
+    if (!isValidBase64Image(imageBase64)) {
+      console.error('Invalid image format:', imageBase64.substring(0, 50));
       return NextResponse.json(
-        { error: 'Invalid image format' },
+        { error: 'Invalid image format. Expected valid base64 image data' },
+        { status: 400 }
+      );
+    }
+    
+    // Log image details for debugging
+    const imageFormat = getImageFormat(imageBase64);
+    const imageSize = getBase64Size(imageBase64);
+    console.log('Image details:', { format: imageFormat, size: imageSize });
+    
+    // Check if image is too large (10MB limit)
+    if (imageSize > 10 * 1024 * 1024) {
+      console.error('Image too large:', imageSize);
+      return NextResponse.json(
+        { error: 'Image is too large. Maximum size is 10MB' },
         { status: 400 }
       );
     }

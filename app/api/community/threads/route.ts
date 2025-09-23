@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import { broadcastUpdate } from '../events/route';
 
 export async function GET(request: NextRequest) {
   try {
@@ -233,12 +234,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const threadData = {
+      _id: result.insertedId.toString(),
+      ...newThread,
+      authorDisplayName: user.displayName,
+      authorAvatar: user.avatar,
+      authorReputation: updatedUser.reputation,
+      authorBadges: updatedUser.badges
+    };
+
+    // Broadcast the new thread to all connected clients
+    broadcastUpdate('new_thread', threadData);
+
     return NextResponse.json({
       success: true,
-      thread: {
-        _id: result.insertedId.toString(),
-        ...newThread
-      }
+      thread: threadData
     }, { status: 201 });
 
   } catch (error) {

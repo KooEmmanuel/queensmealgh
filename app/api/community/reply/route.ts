@@ -1,30 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { broadcastUpdate } from '../events/route';
 
 export async function POST(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const body = await request.json();
-    const { commentId, content, author } = body;
+    const { threadId, commentId, content, authorId } = body;
 
-    if (!commentId || !content || !author) {
+    // Validate required fields
+    if (!threadId || !commentId || !content || !authorId) {
       return NextResponse.json(
-        { error: 'Comment ID, content, and author are required' },
-        { status: 400 }
-      );
-    }
-
-    if (content.length < 1 || content.length > 1000) {
-      return NextResponse.json(
-        { error: 'Reply must be between 1 and 1000 characters' },
+        { error: 'Thread ID, comment ID, content, and author ID are required' },
         { status: 400 }
       );
     }
 
     // Check if user exists
     const user = await db.collection('community_users').findOne({
-      username: author.toLowerCase()
+      _id: new ObjectId(authorId)
     });
 
     if (!user) {
@@ -34,36 +29,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the thread containing this comment
+    // Check if thread exists
     const thread = await db.collection('threads').findOne({
-      'comments._id': new ObjectId(commentId)
+      _id: new ObjectId(threadId)
     });
 
     if (!thread) {
       return NextResponse.json(
-        { error: 'Comment not found' },
+        { error: 'Thread not found' },
         { status: 404 }
       );
     }
 
-    // Create new reply
-    const newReply = {
+    // Create reply object
+    const reply = {
       _id: new ObjectId(),
-      content: content.trim(),
-      author: author.toLowerCase(),
+      content,
+      author: user.username,
+      authorDisplayName: user.displayName,
+      authorAvatar: user.avatar,
+      authorReputation: user.reputation,
       createdAt: new Date(),
-      likes: 0
+      likes: 0,
+      isLiked: false
     };
 
     // Add reply to the comment
     const result = await db.collection('threads').updateOne(
-      { 'comments._id': new ObjectId(commentId) },
       { 
-        $push: { 'comments.$.replies': newReply },
-        $set: { 
-          lastActivity: new Date(),
-          updatedAt: new Date()
-        }
+        _id: new ObjectId(threadId),
+        "comments._id": new ObjectId(commentId)
+      },
+      { 
+        $push: { "comments.$.replies": reply },
+        $inc: { "comments.$.replyCount": 1 }
       }
     );
 
@@ -74,24 +73,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update user's comment count and reputation
-    await db.collection('community_users').updateOne(
-      { username: author.toLowerCase() },
-      { 
-        $inc: { 
-          commentCount: 1,
-          reputation: 2 // 2 points for a reply
-        },
-        $set: { lastActive: new Date() }
-      }
-    );
+    // Broadcast reply update
+    broadcastUpdate('new_reply', {
+      threadId,
+      commentId,
+      reply
+    });
 
     return NextResponse.json({
       success: true,
-      reply: {
-        ...newReply,
-        _id: newReply._id.toString()
-      }
+      reply,
+      message: 'Reply added successfully'
     });
 
   } catch (error) {

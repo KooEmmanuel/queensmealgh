@@ -1,16 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const body = await request.json();
-    const { username, displayName, email, bio } = body;
+    const { username, displayName, email, password, bio } = body;
 
     // Validate required fields
-    if (!username || !displayName) {
+    if (!username || !displayName || !email || !password) {
       return NextResponse.json(
-        { error: 'Username and display name are required' },
+        { error: 'Username, display name, email, and password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password must be at least 6 characters long' },
         { status: 400 }
       );
     }
@@ -43,25 +61,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if email is already used (if provided)
-    if (email) {
-      const existingEmail = await db.collection('community_users').findOne({
-        email: email.toLowerCase()
-      });
+    // Check if email is already used
+    const existingEmail = await db.collection('community_users').findOne({
+      email: email.toLowerCase()
+    });
 
-      if (existingEmail) {
-        return NextResponse.json(
-          { error: 'Email already registered' },
-          { status: 409 }
-        );
-      }
+    if (existingEmail) {
+      return NextResponse.json(
+        { error: 'Email already registered' },
+        { status: 409 }
+      );
     }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create new user
     const newUser = {
       username: username.toLowerCase(),
       displayName,
-      email: email?.toLowerCase() || null,
+      email: email.toLowerCase(),
+      password: hashedPassword,
       bio: bio || '',
       avatar: null,
       joinDate: new Date(),

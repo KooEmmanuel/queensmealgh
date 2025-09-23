@@ -44,7 +44,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${montserrat.variable} ${playfair.variable} ${sourceSans.variable} ${karla.variable}`}>
-      <body className={`${montserrat.className} min-h-screen flex flex-col`}>
+      <body 
+        className={`${montserrat.className} min-h-screen flex flex-col`}
+        suppressHydrationWarning={true}
+      >
         <Navbar />
         <main className="flex-grow">
           {children}

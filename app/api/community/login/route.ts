@@ -1,28 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
     const { db } = await connectToDatabase();
     const body = await request.json();
-    const { username } = body;
+    const { email, password } = body;
 
-    if (!username) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Username is required' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    // Find user by username
+    // Find user by email
     const user = await db.collection('community_users').findOne({
-      username: username.toLowerCase()
+      email: email.toLowerCase()
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
       );
     }
 

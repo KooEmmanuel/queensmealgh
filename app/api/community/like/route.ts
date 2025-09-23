@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { broadcastUpdate } from '../events/route';
 
 // POST - Like a thread or comment
 export async function POST(request: Request) {
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
     
     // If commentId is provided, like a comment
     if (commentId) {
+      console.log('Liking comment:', commentId, 'in thread:', threadId);
+      
       const result = await db.collection('threads').updateOne(
         { 
           _id: new ObjectId(threadId),
@@ -41,25 +44,48 @@ export async function POST(request: Request) {
         { $inc: { "comments.$.likes": 1 } }
       );
       
+      console.log('Comment like result:', result);
+      
       if (result.matchedCount === 0) {
         return NextResponse.json(
           { error: 'Thread or comment not found' },
           { status: 404 }
         );
       }
+      
+      // Broadcast comment like update
+      broadcastUpdate('comment_liked', {
+        threadId,
+        commentId
+      });
     } else {
       // Otherwise, like the thread
-      const result = await db.collection('threads').updateOne(
-        { _id: new ObjectId(threadId) },
-        { $inc: { likes: 1 } }
-      );
+      console.log('Attempting to like thread:', threadId);
       
-      if (result.matchedCount === 0) {
+      // First check if thread exists
+      const thread = await db.collection('threads').findOne({
+        _id: new ObjectId(threadId)
+      });
+      
+      if (!thread) {
+        console.log('Thread not found:', threadId);
         return NextResponse.json(
           { error: 'Thread not found' },
           { status: 404 }
         );
       }
+      
+      const result = await db.collection('threads').updateOne(
+        { _id: new ObjectId(threadId) },
+        { $inc: { likes: 1 } }
+      );
+      
+      console.log('Like result:', result);
+      
+      // Broadcast thread like update
+      broadcastUpdate('thread_liked', {
+        threadId
+      });
     }
     
     return NextResponse.json({ success: true });
