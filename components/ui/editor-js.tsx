@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, memo } from 'react';
+import React, { useEffect, useRef, memo, useCallback } from 'react';
 import EditorJS, { OutputData, EditorConfig } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
@@ -12,6 +12,12 @@ import Embed from '@editorjs/embed';
 import Table from '@editorjs/table';
 import Marker from '@editorjs/marker';
 import InlineCode from '@editorjs/inline-code';
+import Delimiter from '@editorjs/delimiter';
+import Warning from '@editorjs/warning';
+import LinkTool from '@editorjs/link';
+import Checklist from '@editorjs/checklist';
+import Raw from '@editorjs/raw';
+import { useToast } from '@/components/ui/use-toast';
 
 interface EditorProps {
   data: OutputData;
@@ -31,6 +37,60 @@ export const Editor = memo(({
   const editorInstanceRef = useRef<EditorJS | null>(null);
   const isReadyRef = useRef(false);
   const holderIdRef = useRef(holder);
+  const { toast } = useToast();
+
+  // Enhanced image upload handler with server upload
+  const handleImageUpload = useCallback(async (file: File) => {
+    try {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please select a valid image file');
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Image size must be less than 5MB');
+      }
+
+      // Create FormData for server upload
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('type', 'blog-content');
+
+      // Upload to server
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const result = await response.json();
+      
+      return {
+        success: 1,
+        file: {
+          url: result.url,
+          name: file.name,
+          size: file.size,
+        }
+      };
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
+      });
+      
+      return {
+        success: 0,
+        error: error instanceof Error ? error.message : "Upload failed"
+      };
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (!editorInstanceRef.current) {
@@ -46,7 +106,7 @@ export const Editor = memo(({
             inlineToolbar: true,
             config: {
               placeholder: 'Enter a header',
-              levels: [1, 2, 3, 4],
+              levels: [1, 2, 3, 4, 5, 6],
               defaultLevel: 2
             }
           },
@@ -61,6 +121,10 @@ export const Editor = memo(({
               defaultStyle: 'unordered'
             }
           },
+          checklist: {
+            class: Checklist,
+            inlineToolbar: true,
+          },
           quote: {
             class: Quote,
             inlineToolbar: true,
@@ -69,31 +133,19 @@ export const Editor = memo(({
               captionPlaceholder: 'Quote\'s author',
             },
           },
+          warning: {
+            class: Warning,
+            inlineToolbar: true,
+            config: {
+              titlePlaceholder: 'Title',
+              messagePlaceholder: 'Message',
+            },
+          },
           image: {
             class: ImageTool,
             config: {
               uploader: {
-                uploadByFile(file: File) {
-                  return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-
-                    reader.onloadend = () => {
-                      resolve({
-                        success: 1,
-                        file: {
-                          url: reader.result as string,
-                        }
-                      });
-                    };
-
-                    reader.onerror = (error) => {
-                      console.error("FileReader error:", error);
-                      reject(error);
-                    };
-
-                    reader.readAsDataURL(file);
-                  });
-                },
+                uploadByFile: handleImageUpload,
                 uploadByUrl(url: string) {
                   return Promise.resolve({
                     success: 1,
@@ -102,12 +154,53 @@ export const Editor = memo(({
                     }
                   });
                 }
+              },
+              captionPlaceholder: 'Caption (optional)',
+              buttonContent: 'Select an image',
+              withBorder: true,
+              withBackground: false,
+              withResize: true,
+            }
+          },
+          linkTool: {
+            class: LinkTool,
+            config: {
+              endpoint: '/api/link-preview', // You can implement this endpoint
+            }
+          },
+          code: {
+            class: CodeTool,
+            config: {
+              placeholder: 'Enter code',
+            }
+          },
+          embed: {
+            class: Embed,
+            config: {
+              services: {
+                youtube: true,
+                codepen: true,
+                instagram: true,
+                twitter: true,
+                github: true,
               }
             }
           },
-          code: CodeTool,
-          embed: Embed,
-          table: Table,
+          table: {
+            class: Table,
+            inlineToolbar: true,
+            config: {
+              rows: 2,
+              cols: 3,
+            }
+          },
+          delimiter: Delimiter,
+          raw: {
+            class: Raw,
+            config: {
+              placeholder: 'Enter HTML code',
+            }
+          },
           marker: {
             class: Marker,
             shortcut: 'CMD+SHIFT+M',

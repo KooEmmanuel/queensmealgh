@@ -50,23 +50,121 @@ const renderEditorJsContent = (contentInput: string | object) => {
           case 'image':
              if (block.data && block.data.file && block.data.file.url) {
                return (
-                 <div key={block.id} className="my-4 flex justify-center">
-                   <Image
-                     src={block.data.file.url}
-                     alt={block.data.caption || 'Blog image'}
-                     width={700}
-                     height={400}
-                     className="rounded-md object-contain max-w-full h-auto"
-                     style={{ objectFit: 'contain' }}
-                   />
+                 <div key={block.id} className="my-6 flex flex-col items-center">
+                   <div className="relative w-full max-w-4xl">
+                     <Image
+                       src={block.data.file.url}
+                       alt={block.data.caption || 'Blog image'}
+                       width={800}
+                       height={600}
+                       className="rounded-lg object-contain max-w-full h-auto shadow-sm"
+                       style={{ objectFit: 'contain' }}
+                     />
+                   </div>
                    {block.data.caption && (
-                     <p className="text-center text-sm text-gray-500 mt-1">{block.data.caption}</p>
+                     <p className="text-center text-sm text-gray-600 mt-2 italic">{block.data.caption}</p>
                    )}
                  </div>
                );
              }
              console.warn("Image block is missing data:", block.data);
              return null;
+          case 'warning':
+             return (
+               <div key={block.id} className="my-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-md">
+                 <div className="flex">
+                   <div className="flex-shrink-0">
+                     <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                     </svg>
+                   </div>
+                   <div className="ml-3">
+                     <h3 className="text-sm font-medium text-yellow-800">
+                       {block.data.title || 'Warning'}
+                     </h3>
+                     <div className="mt-2 text-sm text-yellow-700">
+                       <p dangerouslySetInnerHTML={{ __html: block.data.message }}></p>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             );
+          case 'checklist':
+             return (
+               <div key={block.id} className="my-4">
+                 <ul className="space-y-2">
+                   {block.data.items.map((item: any, index: number) => (
+                     <li key={index} className="flex items-start">
+                       <input
+                         type="checkbox"
+                         checked={item.checked}
+                         readOnly
+                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                       />
+                       <span className={`ml-3 text-sm ${item.checked ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                         {item.text}
+                       </span>
+                     </li>
+                   ))}
+                 </ul>
+               </div>
+             );
+          case 'delimiter':
+             return (
+               <div key={block.id} className="my-8 flex justify-center">
+                 <div className="text-4xl text-gray-300">***</div>
+               </div>
+             );
+          case 'code':
+             return (
+               <div key={block.id} className="my-4">
+                 <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                   <code>{block.data.code}</code>
+                 </pre>
+               </div>
+             );
+          case 'embed':
+             return (
+               <div key={block.id} className="my-6">
+                 <div className="bg-gray-100 p-4 rounded-lg">
+                   <div className="aspect-video">
+                     <iframe
+                       src={block.data.embed}
+                       className="w-full h-full rounded"
+                       allowFullScreen
+                       title="Embedded content"
+                     />
+                   </div>
+                   {block.data.caption && (
+                     <p className="text-sm text-gray-600 mt-2">{block.data.caption}</p>
+                   )}
+                 </div>
+               </div>
+             );
+          case 'table':
+             return (
+               <div key={block.id} className="my-6 overflow-x-auto">
+                 <table className="min-w-full border border-gray-300">
+                   <tbody>
+                     {block.data.content.map((row: string[], rowIndex: number) => (
+                       <tr key={rowIndex}>
+                         {row.map((cell: string, cellIndex: number) => (
+                           <td key={cellIndex} className="border border-gray-300 px-4 py-2">
+                             {cell}
+                           </td>
+                         ))}
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               </div>
+             );
+          case 'raw':
+             return (
+               <div key={block.id} className="my-4">
+                 <div dangerouslySetInnerHTML={{ __html: block.data.html }} />
+               </div>
+             );
           default:
             console.warn("Unsupported block type:", block.type);
             return <p key={block.id} className="text-sm text-gray-500">[Unsupported block type: {block.type}]</p>;
