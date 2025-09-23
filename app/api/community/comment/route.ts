@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
     // Update user's comment count
     await db.collection('community_users').updateOne(
-      { username: author.toLowerCase() },
+      { username: authorId.toLowerCase() },
       { 
         $inc: { commentCount: 1 },
         $set: { lastActive: new Date() }
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     // Update user's reputation for commenting
     await db.collection('community_users').updateOne(
-      { username: author.toLowerCase() },
+      { username: authorId.toLowerCase() },
       { $inc: { reputation: 2 } } // 2 points for commenting
     );
     
