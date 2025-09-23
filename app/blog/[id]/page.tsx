@@ -9,6 +9,19 @@ import RelatedPosts from "@/components/RelatedPosts";
 import { BlogPost } from '@/types/blog-post';
 import Footer from '@/components/Footer';
 
+// Utility function to sanitize HTML content
+const sanitizeHtml = (html: string): string => {
+  // Basic HTML sanitization - in production, use a proper library like DOMPurify
+  if (typeof html !== 'string') return '';
+  
+  // Remove potentially dangerous tags and attributes
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/javascript:/gi, '');
+};
+
 const renderEditorJsContent = (contentInput: string | object) => {
   let contentData: any;
 
@@ -26,182 +39,307 @@ const renderEditorJsContent = (contentInput: string | object) => {
        return <p className="text-red-500">[Error: Invalid content type]</p>;
     }
 
-    if (contentData && Array.isArray(contentData.blocks)) {
-      return contentData.blocks.map((block: any) => {
-        switch (block.type) {
-          case 'paragraph':
-            return (
-              <p key={block.id} className="text-gray-700 leading-relaxed mb-6 text-lg">
-                <span dangerouslySetInnerHTML={{ __html: block.data.text }}></span>
-              </p>
-            );
-          case 'header':
-            const headerTag = `h${block.data.level}`;
-            const headerClasses = {
-              1: "text-4xl font-bold text-gray-900 mb-8 mt-12",
-              2: "text-3xl font-bold text-gray-900 mb-6 mt-10",
-              3: "text-2xl font-semibold text-gray-800 mb-4 mt-8",
-              4: "text-xl font-semibold text-gray-800 mb-3 mt-6",
-              5: "text-lg font-semibold text-gray-800 mb-3 mt-4",
-              6: "text-base font-semibold text-gray-800 mb-2 mt-4"
-            };
-            return React.createElement(headerTag as string, {
-              key: block.id,
-              className: headerClasses[block.data.level as keyof typeof headerClasses] || headerClasses[2],
-              dangerouslySetInnerHTML: { __html: block.data.text }
-            });
-          case 'list':
-            const listTag = block.data.style === 'ordered' ? 'ol' : 'ul';
-            return React.createElement(listTag as string, {
-              key: block.id,
-              className: block.data.style === 'ordered' ? "list-decimal list-inside pl-6 my-4 space-y-2" : "list-disc list-inside pl-6 my-4 space-y-2"
-            },
-              block.data.items.map((item: any, index: number) => {
-                // Handle both string and object items
-                const itemText = typeof item === 'string' ? item : (item.text || item.content || JSON.stringify(item));
-                return (
-                  <li key={index} className="text-gray-700 leading-relaxed">
-                    <span dangerouslySetInnerHTML={{ __html: itemText }}></span>
-                  </li>
-                );
-              })
-            );
-          case 'image':
-             if (block.data && block.data.file && block.data.file.url) {
-               return (
-                 <div key={block.id} className="my-6 flex flex-col items-center">
-                   <div className="relative w-full max-w-4xl">
-                     <Image
-                       src={block.data.file.url}
-                       alt={block.data.caption || 'Blog image'}
-                       width={800}
-                       height={600}
-                       className="rounded-lg object-contain max-w-full h-auto shadow-sm"
-                       style={{ objectFit: 'contain' }}
-                     />
-                   </div>
-                   {block.data.caption && (
-                     <p className="text-center text-sm text-gray-600 mt-2 italic">{block.data.caption}</p>
-                   )}
-                 </div>
-               );
-             }
-             console.warn("Image block is missing data:", block.data);
-             return null;
-          case 'warning':
-             return (
-               <div key={block.id} className="my-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-md">
-                 <div className="flex">
-                   <div className="flex-shrink-0">
-                     <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                     </svg>
-                   </div>
-                   <div className="ml-3">
-                     <h3 className="text-sm font-medium text-yellow-800">
-                       {block.data.title || 'Warning'}
-                     </h3>
-                     <div className="mt-2 text-sm text-yellow-700">
-                       <p dangerouslySetInnerHTML={{ __html: block.data.message }}></p>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             );
-          case 'checklist':
-             return (
-               <div key={block.id} className="my-4">
-                 <ul className="space-y-2">
-                   {block.data.items.map((item: any, index: number) => (
-                     <li key={index} className="flex items-start">
-                       <input
-                         type="checkbox"
-                         checked={item.checked}
-                         readOnly
-                         className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                       />
-                       <span className={`ml-3 text-sm ${item.checked ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                         {item.text}
-                       </span>
-                     </li>
-                   ))}
-                 </ul>
-               </div>
-             );
-          case 'quote':
-            return (
-              <blockquote key={block.id} className="border-l-4 border-green-500 pl-8 py-6 my-8 bg-green-50 rounded-r-lg">
-                <p className="text-gray-700 italic text-xl leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: block.data.text }}></p>
-                {block.data.caption && (
-                  <cite className="text-sm text-gray-600 mt-4 block font-medium">— {block.data.caption}</cite>
-                )}
-              </blockquote>
-            );
-          case 'delimiter':
-             return (
-               <div key={block.id} className="my-8 flex justify-center">
-                 <div className="text-4xl text-gray-300">***</div>
-               </div>
-             );
-          case 'code':
-             return (
-               <div key={block.id} className="my-8">
-                 <pre className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto text-sm leading-relaxed">
-                   <code>{block.data.code}</code>
-                 </pre>
-               </div>
-             );
-          case 'embed':
-             return (
-               <div key={block.id} className="my-6">
-                 <div className="bg-gray-100 p-4 rounded-lg">
-                   <div className="aspect-video">
-                     <iframe
-                       src={block.data.embed}
-                       className="w-full h-full rounded"
-                       allowFullScreen
-                       title="Embedded content"
-                     />
-                   </div>
-                   {block.data.caption && (
-                     <p className="text-sm text-gray-600 mt-2">{block.data.caption}</p>
-                   )}
-                 </div>
-               </div>
-             );
-          case 'table':
-             return (
-               <div key={block.id} className="my-8 overflow-x-auto">
-                 <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-                   <tbody>
-                     {block.data.content.map((row: string[], rowIndex: number) => (
-                       <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                         {row.map((cell: string, cellIndex: number) => (
-                           <td key={cellIndex} className="border border-gray-200 px-6 py-4 text-sm text-gray-700">
-                             {cell}
-                           </td>
-                         ))}
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
-             );
-          case 'raw':
-             return (
-               <div key={block.id} className="my-4">
-                 <div dangerouslySetInnerHTML={{ __html: block.data.html }} />
-               </div>
-             );
-          default:
-            console.warn("Unsupported block type:", block.type);
-            return <p key={block.id} className="text-sm text-gray-500">[Unsupported block type: {block.type}]</p>;
-        }
-      });
-    } else {
-       console.error("Error: Parsed content does not contain a 'blocks' array:", contentData);
-       return <p className="text-red-500">[Error: Invalid content structure]</p>;
+    // Validate content structure
+    if (!contentData || typeof contentData !== 'object') {
+      console.error("Error: Content data is not a valid object:", contentData);
+      return <p className="text-red-500">[Error: Invalid content structure]</p>;
     }
+
+    if (!Array.isArray(contentData.blocks)) {
+      console.error("Error: Content blocks is not an array:", contentData.blocks);
+      return <p className="text-red-500">[Error: Content blocks must be an array]</p>;
+    }
+
+    return contentData.blocks.map((block: any, index: number) => {
+      // Validate block structure
+      if (!block || typeof block !== 'object') {
+        console.warn(`Invalid block at index ${index}:`, block);
+        return <p key={`error-${index}`} className="text-red-500 text-sm">[Invalid block data]</p>;
+      }
+
+      if (!block.type || typeof block.type !== 'string') {
+        console.warn(`Block at index ${index} missing type:`, block);
+        return <p key={`error-${index}`} className="text-red-500 text-sm">[Block missing type]</p>;
+      }
+
+      if (!block.data || typeof block.data !== 'object') {
+        console.warn(`Block at index ${index} missing data:`, block);
+        return <p key={`error-${index}`} className="text-red-500 text-sm">[Block missing data]</p>;
+      }
+
+      switch (block.type) {
+        case 'paragraph':
+          return (
+            <p key={block.id || `paragraph-${index}`} className="text-gray-700 leading-relaxed mb-6 text-lg">
+              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.data.text || '') }}></span>
+            </p>
+          );
+        case 'header':
+          const headerTag = `h${block.data.level}`;
+          const headerClasses = {
+            1: "text-4xl font-bold text-gray-900 mb-8 mt-12",
+            2: "text-3xl font-bold text-gray-900 mb-6 mt-10",
+            3: "text-2xl font-semibold text-gray-800 mb-4 mt-8",
+            4: "text-xl font-semibold text-gray-800 mb-3 mt-6",
+            5: "text-lg font-semibold text-gray-800 mb-3 mt-4",
+            6: "text-base font-semibold text-gray-800 mb-2 mt-4"
+          };
+          return React.createElement(headerTag as string, {
+            key: block.id || `header-${index}`,
+            className: headerClasses[block.data.level as keyof typeof headerClasses] || headerClasses[2],
+            dangerouslySetInnerHTML: { __html: sanitizeHtml(block.data.text || '') }
+          });
+        case 'list':
+          const listTag = block.data.style === 'ordered' ? 'ol' : 'ul';
+          const listItems = Array.isArray(block.data.items) ? block.data.items : [];
+          
+          return React.createElement(listTag as string, {
+            key: block.id || `list-${index}`,
+            className: block.data.style === 'ordered' ? "list-decimal list-inside pl-6 my-4 space-y-2" : "list-disc list-inside pl-6 my-4 space-y-2"
+          },
+            listItems.map((item: any, itemIndex: number) => {
+              // Handle different item types safely
+              let itemText = '';
+              
+              if (typeof item === 'string') {
+                itemText = item;
+              } else if (typeof item === 'object' && item !== null) {
+                // Handle nested objects in list items
+                if (item.text) {
+                  itemText = item.text;
+                } else if (item.content) {
+                  itemText = item.content;
+                } else if (item.checked !== undefined) {
+                  // Handle checklist items
+                  itemText = item.text || item.content || '';
+                } else {
+                  // Fallback for other object types
+                  itemText = JSON.stringify(item);
+                }
+              } else {
+                itemText = String(item || '');
+              }
+              
+              return (
+                <li key={itemIndex} className="text-gray-700 leading-relaxed">
+                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(itemText) }}></span>
+                </li>
+              );
+            })
+          );
+        case 'image':
+          // Handle different image data structures
+          let imageUrl = '';
+          let imageCaption = '';
+          
+          if (block.data) {
+            // Handle EditorJS image format
+            if (block.data.file && block.data.file.url) {
+              imageUrl = block.data.file.url;
+              imageCaption = block.data.caption || '';
+            }
+            // Handle direct URL format
+            else if (block.data.url) {
+              imageUrl = block.data.url;
+              imageCaption = block.data.caption || '';
+            }
+            // Handle legacy format
+            else if (typeof block.data === 'string') {
+              imageUrl = block.data;
+            }
+          }
+          
+          if (imageUrl) {
+            return (
+              <div key={block.id || `image-${index}`} className="my-6 flex flex-col items-center">
+                <div className="relative w-full max-w-4xl">
+                  <Image
+                    src={imageUrl}
+                    alt={imageCaption || 'Blog image'}
+                    width={800}
+                    height={600}
+                    className="rounded-lg object-contain max-w-full h-auto shadow-sm"
+                    style={{ objectFit: 'contain' }}
+                    onError={(e) => {
+                      console.warn('Image failed to load:', imageUrl);
+                      // You could set a fallback image here
+                    }}
+                  />
+                </div>
+                {imageCaption && (
+                  <p className="text-center text-sm text-gray-600 mt-2 italic">{imageCaption}</p>
+                )}
+              </div>
+            );
+          }
+          
+          console.warn("Image block is missing valid URL:", block.data);
+          return (
+            <div key={block.id || `image-error-${index}`} className="my-6 p-4 bg-gray-100 rounded-lg text-center">
+              <p className="text-gray-500 text-sm">[Image could not be loaded]</p>
+            </div>
+          );
+        case 'warning':
+          return (
+            <div key={block.id || `warning-${index}`} className="my-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-md">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    {block.data.title || 'Warning'}
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.data.message || '') }}></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        case 'checklist':
+          const checklistItems = Array.isArray(block.data.items) ? block.data.items : [];
+          return (
+            <div key={block.id || `checklist-${index}`} className="my-4">
+              <ul className="space-y-2">
+                {checklistItems.map((item: any, itemIndex: number) => {
+                  // Handle different item structures
+                  let itemText = '';
+                  let isChecked = false;
+                  
+                  if (typeof item === 'object' && item !== null) {
+                    itemText = item.text || item.content || '';
+                    isChecked = Boolean(item.checked);
+                  } else if (typeof item === 'string') {
+                    itemText = item;
+                    isChecked = false;
+                  } else {
+                    itemText = String(item || '');
+                    isChecked = false;
+                  }
+                  
+                  return (
+                    <li key={itemIndex} className="flex items-start">
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        readOnly
+                        className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className={`ml-3 text-sm ${isChecked ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                        {itemText}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        case 'quote':
+          return (
+            <blockquote key={block.id || `quote-${index}`} className="border-l-4 border-gray-300 pl-8 py-6 my-8 bg-gray-50 rounded-r-lg">
+              <p className="text-gray-700 italic text-xl leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.data.text || '') }}></p>
+              {block.data.caption && (
+                <cite className="text-sm text-gray-600 mt-4 block font-medium">— {sanitizeHtml(block.data.caption)}</cite>
+              )}
+            </blockquote>
+          );
+        case 'delimiter':
+          return (
+            <div key={block.id || `delimiter-${index}`} className="my-8 flex justify-center">
+              <div className="text-4xl text-gray-300">***</div>
+            </div>
+          );
+        case 'code':
+          return (
+            <div key={block.id || `code-${index}`} className="my-8">
+              <pre className="bg-gray-900 text-gray-100 p-6 rounded-lg overflow-x-auto text-sm leading-relaxed">
+                <code>{block.data.code}</code>
+              </pre>
+            </div>
+          );
+        case 'embed':
+          return (
+            <div key={block.id || `embed-${index}`} className="my-6">
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <div className="aspect-video">
+                  <iframe
+                    src={block.data.embed}
+                    className="w-full h-full rounded"
+                    allowFullScreen
+                    title="Embedded content"
+                  />
+                </div>
+                {block.data.caption && (
+                  <p className="text-sm text-gray-600 mt-2">{block.data.caption}</p>
+                )}
+              </div>
+            </div>
+          );
+        case 'table':
+          const tableContent = Array.isArray(block.data.content) ? block.data.content : [];
+          return (
+            <div key={block.id || `table-${index}`} className="my-8 overflow-x-auto">
+              <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+                <tbody>
+                  {tableContent.map((row: any, rowIndex: number) => {
+                    // Handle different row formats
+                    const rowData = Array.isArray(row) ? row : [];
+                    
+                    return (
+                      <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                        {rowData.map((cell: any, cellIndex: number) => {
+                          // Handle different cell formats
+                          let cellContent = '';
+                          
+                          if (typeof cell === 'string') {
+                            cellContent = cell;
+                          } else if (typeof cell === 'object' && cell !== null) {
+                            cellContent = cell.text || cell.content || JSON.stringify(cell);
+                          } else {
+                            cellContent = String(cell || '');
+                          }
+                          
+                          return (
+                            <td key={cellIndex} className="border border-gray-200 px-6 py-4 text-sm text-gray-700">
+                              <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(cellContent) }}></span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        case 'raw':
+          return (
+            <div key={block.id || `raw-${index}`} className="my-4">
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(block.data.html || '') }} />
+            </div>
+          );
+        default:
+          console.warn("Unsupported block type:", block.type, "Block data:", block.data);
+          return (
+            <div key={block.id || `unsupported-${index}`} className="my-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Unsupported content type:</strong> {block.type}
+              </p>
+              {process.env.NODE_ENV === 'development' && (
+                <details className="mt-2">
+                  <summary className="text-xs text-yellow-600 cursor-pointer">Show block data</summary>
+                  <pre className="mt-2 text-xs bg-yellow-100 p-2 rounded overflow-auto">
+                    {JSON.stringify(block.data, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          );
+      }
+    });
   } catch (e) {
     console.error("Failed to parse or render blog content:", e, "Input:", contentInput);
     if (typeof contentInput === 'string' && contentInput !== "[object Object]") {
@@ -211,19 +349,29 @@ const renderEditorJsContent = (contentInput: string | object) => {
   }
 };
 
-export default function BlogDetailPage({ params }: { params: { id: string } }) {
+export default function BlogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [blogId, setBlogId] = useState<string | null>(null);
   
   useEffect(() => {
+    const initializeParams = async () => {
+      const resolvedParams = await params;
+      setBlogId(resolvedParams.id);
+    };
+    
+    initializeParams();
+  }, [params]);
+  
+  useEffect(() => {
+    if (!blogId) return;
+    
     const fetchPost = async () => {
-      if (!params.id) return;
-
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`/api/blog/${params.id}`);
+        const response = await fetch(`/api/blog/${blogId}`);
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -246,10 +394,8 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
       }
     };
     
-    if (params.id) {
-      fetchPost();
-    }
-  }, [params.id]);
+    fetchPost();
+  }, [blogId]);
   
   if (loading) {
     return (
@@ -285,8 +431,8 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Header */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link href="/blog">
             <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -296,78 +442,63 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <div className="relative">
-        {post.coverImage ? (
-          <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
-            <Image
-              src={post.coverImage}
-              alt={post.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+      {/* Main Content Container */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Article Title */}
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+          {post.title}
+        </h1>
+
+        {/* Article Meta */}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 lg:gap-6 text-xs sm:text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+          {post.category && (
+            <div className="flex items-center">
+              <span className="inline-block bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium">
+                {post.category.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center">
+            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="font-medium text-xs sm:text-sm">By {post.author.name}</span>
           </div>
-        ) : (
-          <div className="h-[30vh] bg-gradient-to-br from-green-50 to-orange-50 flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{post.title}</h1>
+          <div className="flex items-center">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="text-xs sm:text-sm">{new Date(post.createdAt).toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-1 h-1 bg-gray-300 rounded-full mr-1 sm:mr-2"></div>
+            <span className="text-xs sm:text-sm">5 Min Read</span>
+          </div>
+        </div>
+
+        {/* Hero Image */}
+        {post.coverImage && (
+          <div className="mb-12">
+            <div className="relative w-full h-[300px] sm:h-[400px] lg:h-[500px] overflow-hidden rounded-lg">
+              <Image
+                src={post.coverImage}
+                alt={post.title}
+                fill
+                className="object-cover"
+                priority
+              />
             </div>
           </div>
         )}
-        
-        {/* Article Header */}
-        <div className="max-w-4xl mx-auto px-4 -mt-20 relative z-10">
-          <div className="bg-white rounded-lg shadow-xl p-8 md:p-12">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                {post.title}
-              </h1>
-              
-              {post.excerpt && (
-                <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-8">
-                  {post.excerpt}
-                </p>
-              )}
-              
-              {/* Article Meta */}
-              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8">
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="font-medium">{post.author.name}</span>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>{new Date(post.createdAt).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</span>
-                </div>
-                {post.category && (
-                  <div className="flex items-center">
-                    <Tag className="h-4 w-4 mr-2" />
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                      {post.category}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Article Content */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <article className="prose prose-lg prose-gray max-w-none">
+        {/* Article Content */}
+        <article className="prose prose-lg prose-gray max-w-none mb-16">
           {renderEditorJsContent(post.content)}
         </article>
         
         {/* Author Bio */}
-        <div className="mt-16 p-8 bg-gray-50 rounded-2xl">
-          <div className="flex items-start space-x-6">
+        <div className="bg-gray-50 rounded-2xl p-8 mb-16">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <div className="flex-shrink-0">
               <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden">
                 {post.author.avatar ? (
@@ -403,9 +534,9 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
       
       {/* Related Posts */}
       <div className="bg-gray-50 py-16">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <RelatedPosts 
-            currentPostId={params.id} 
+            currentPostId={blogId || ''} 
             category={post.category || ''} 
           />
         </div>
@@ -414,4 +545,4 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
       <Footer />
     </div>
   );
-} 
+}

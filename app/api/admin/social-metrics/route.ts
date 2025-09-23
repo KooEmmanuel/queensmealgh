@@ -14,12 +14,44 @@ interface MetricInput {
 export async function GET() {
   try {
     const { db } = await connectToDatabase(); // Get db object
-    // Use db.collection().find() - ensure collection name matches ('socialMetrics' or 'socialmetrics')
-    const metricsCursor = db.collection('social_metrics').find({}).sort({ platform: 1, metricType: 1 });
-    const metrics = await metricsCursor.toArray(); // Convert cursor to array
     
-    console.log("Fetched metrics:", JSON.stringify(metrics, null, 2)); // Debug log
-    return NextResponse.json(metrics);
+    // Use aggregation to get only the latest record for each platform/metricType combination
+    const pipeline = [
+      {
+        $sort: { platform: 1, metricType: 1, lastUpdated: -1 }
+      },
+      {
+        $group: {
+          _id: { 
+            platform: { $toLower: "$platform" }, 
+            metricType: { $toLower: "$metricType" } 
+          },
+          latestDoc: { $first: "$$ROOT" }
+        }
+      },
+      {
+        $replaceRoot: { newRoot: "$latestDoc" }
+      },
+      {
+        $sort: { platform: 1, metricType: 1 }
+      }
+    ];
+    
+    const metrics = await db.collection('social_metrics').aggregate(pipeline).toArray();
+    
+    console.log("=== ADMIN API GET REQUEST ===");
+    console.log("Fetched metrics count:", metrics.length);
+    console.log("Fetched metrics:", JSON.stringify(metrics, null, 2));
+    console.log("=== END ADMIN API GET ===");
+    
+    // Add cache control headers to prevent caching
+    return NextResponse.json(metrics, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
   } catch (error) {
     console.error("Error fetching social metrics:", error);
     return NextResponse.json({ message: "Failed to fetch social metrics", error: (error as Error).message }, { status: 500 });
@@ -32,7 +64,9 @@ export async function POST(request: Request) {
     const { db } = await connectToDatabase(); // Get db object
     const body: MetricInput[] = await request.json();
 
-    console.log("Received metrics payload:", JSON.stringify(body, null, 2)); // <-- ADD THIS LOG
+    console.log("=== ADMIN API POST REQUEST ===");
+    console.log("Received metrics payload:", JSON.stringify(body, null, 2));
+    console.log("Payload length:", body.length);
 
     if (!Array.isArray(body)) {
       return NextResponse.json({ message: "Invalid input format, expected an array of metrics." }, { status: 400 });
@@ -50,7 +84,10 @@ export async function POST(request: Request) {
       
       return {
         updateOne: {
-          filter: { platform: cleanPlatform, metricType: cleanMetricType },
+          filter: { 
+            platform: cleanPlatform, 
+            metricType: cleanMetricType
+          },
           update: {
             $set: {
               platform: cleanPlatform,
@@ -72,6 +109,15 @@ export async function POST(request: Request) {
     // Ensure collection name matches ('socialMetrics' or 'socialmetrics')
     const result = await db.collection('social_metrics').bulkWrite(operations as any); 
 
+    console.log("=== DATABASE OPERATION RESULT ===");
+    console.log("Bulk write result:", JSON.stringify(result, null, 2));
+    console.log(`Matched: ${result.matchedCount}, Modified: ${result.modifiedCount}, Upserted: ${result.upsertedCount}`);
+    
+    // Fetch the updated data to verify it was saved
+    const updatedMetrics = await db.collection('social_metrics').find({}).sort({ platform: 1, metricType: 1 }).toArray();
+    console.log("Updated metrics after save:", JSON.stringify(updatedMetrics, null, 2));
+    console.log("=== END DATABASE OPERATION ===");
+
     return NextResponse.json({ message: "Social metrics updated successfully", result }, { status: 200 });
 
   } catch (error) {
@@ -85,5 +131,36 @@ export async function POST(request: Request) {
         }
     }
     return NextResponse.json({ message: errorMessage, error: errorMessage }, { status: 500 });
+  }
+}
+
+// DELETE - Delete all records in the social_metrics collection
+export async function DELETE() {
+  try {
+    const { db } = await connectToDatabase();
+    
+    console.log("=== DELETE ALL SOCIAL METRICS ===");
+    
+    // Count existing records before deletion
+    const countBefore = await db.collection('social_metrics').countDocuments();
+    console.log(`Records before deletion: ${countBefore}`);
+    
+    // Delete all records in the collection
+    const deleteResult = await db.collection('social_metrics').deleteMany({});
+    
+    console.log(`Deleted ${deleteResult.deletedCount} records`);
+    console.log("=== END DELETE ALL ===");
+    
+    return NextResponse.json({ 
+      message: `All social metrics deleted successfully. Removed ${deleteResult.deletedCount} records.`,
+      deletedCount: deleteResult.deletedCount 
+    });
+    
+  } catch (error) {
+    console.error("Error deleting all social metrics:", error);
+    return NextResponse.json({ 
+      message: "Failed to delete all social metrics", 
+      error: (error as Error).message 
+    }, { status: 500 });
   }
 } 

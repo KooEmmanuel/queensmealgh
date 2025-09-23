@@ -39,17 +39,29 @@ export function SocialMetricsForm() {
   const fetchMetrics = async () => {
     setIsFetching(true);
     try {
-      const response = await fetch('/api/admin/social-metrics');
+      // Add cache-busting parameter to ensure fresh data
+      const response = await fetch(`/api/admin/social-metrics?t=${Date.now()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch metrics');
       }
       const data: Metric[] = await response.json();
+      console.log("=== FORM FETCH DEBUG ===");
+      console.log("Fetched data:", data);
+      console.log("METRIC_DEFINITIONS:", METRIC_DEFINITIONS);
+      
       const initialState: MetricInputState = {};
       METRIC_DEFINITIONS.forEach(def => {
         const key = generateKey(def.platform, def.metricType);
-        const existing = data.find(m => m.platform === def.platform && m.metricType === def.metricType);
+        const existing = data.find(m => 
+          m.platform.toLowerCase() === def.platform.toLowerCase() && 
+          m.metricType.toLowerCase() === def.metricType.toLowerCase()
+        );
+        console.log(`Looking for ${def.platform}-${def.metricType}, found:`, existing);
         initialState[key] = existing ? String(existing.value) : ''; // Initialize with fetched or empty string
       });
+      
+      console.log("Initial state:", initialState);
+      console.log("=== END FORM FETCH DEBUG ===");
       setMetrics(initialState);
     } catch (error) {
       console.error("Error fetching metrics:", error);
@@ -77,6 +89,47 @@ export function SocialMetricsForm() {
   const handleInputChange = (platform: string, metricType: string, value: string) => {
     const key = generateKey(platform, metricType);
     setMetrics(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm('⚠️ WARNING: This will DELETE ALL social metrics records permanently. This action cannot be undone. Continue?')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/admin/social-metrics', {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete all records');
+      }
+      
+      const result = await response.json();
+      toast({
+        title: "🗑️ All Records Deleted!",
+        description: `Successfully deleted ${result.deletedCount} social metrics records.`,
+        duration: 4000,
+      });
+      
+      // Clear the form after deletion
+      const emptyState: MetricInputState = {};
+      METRIC_DEFINITIONS.forEach(def => {
+        emptyState[generateKey(def.platform, def.metricType)] = '';
+      });
+      setMetrics(emptyState);
+    } catch (error: any) {
+      console.error("Error deleting all records:", error);
+      toast({
+        title: "❌ Delete Failed",
+        description: error.message || "Failed to delete all records.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -135,8 +188,8 @@ export function SocialMetricsForm() {
         description: "Your social media metrics have been updated and saved.",
         duration: 4000,
       });
-      // Optionally re-fetch metrics after saving
-      // fetchMetrics();
+      // Re-fetch metrics after saving to show updated values
+      await fetchMetrics();
     } catch (error: any) {
       console.error("Error saving metrics:", error);
       toast({
@@ -189,14 +242,20 @@ export function SocialMetricsForm() {
           )}
         </CardContent>
         <CardFooter className="flex justify-between">
-           <Button type="button" variant="outline" onClick={fetchMetrics} disabled={isFetching || isLoading}>
-             <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-             Refresh
-           </Button>
-           <Button type="submit" disabled={isLoading || isFetching}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            {isLoading ? 'Saving...' : 'Save Metrics'}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={fetchMetrics} disabled={isFetching || isLoading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button type="button" variant="destructive" onClick={handleDeleteAll} disabled={isLoading || isFetching}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Delete All Records
+            </Button>
+          </div>
+          <Button type="submit" disabled={isLoading || isFetching}>
+           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+           {isLoading ? 'Saving...' : 'Save Metrics'}
+         </Button>
         </CardFooter>
       </form>
     </Card>
