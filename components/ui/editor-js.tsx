@@ -224,9 +224,24 @@ export const Editor = memo(({
       setIsLoading(true);
       setHasError(false);
 
+      // Wait for DOM to be fully ready
+      if (document.readyState !== 'complete') {
+        await new Promise(resolve => {
+          if (document.readyState === 'complete') {
+            resolve(void 0);
+          } else {
+            document.addEventListener('readystatechange', () => {
+              if (document.readyState === 'complete') {
+                resolve(void 0);
+              }
+            });
+          }
+        });
+      }
+
       // Wait for DOM element to be available with more robust checking
       let attempts = 0;
-      const maxAttempts = 30; // Increased attempts
+      const maxAttempts = 50; // Increased attempts
       let holderElement = null;
       
       while (attempts < maxAttempts && !holderElement) {
@@ -242,7 +257,7 @@ export const Editor = memo(({
         }
         
         if (!holderElement) {
-          await new Promise(resolve => setTimeout(resolve, 100)); // Increased delay
+          await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay for faster response
           attempts++;
         }
       }
@@ -282,6 +297,13 @@ export const Editor = memo(({
       console.log(`Initializing EditorJS for holder: ${holderIdRef.current}`);
       console.log('Element found:', holderElement);
       console.log('Element ID:', holderElement?.id);
+      
+      // Ensure the element is properly set up
+      if (holderElement) {
+        holderElement.setAttribute('data-editor-ready', 'true');
+        // Force a reflow to ensure the element is fully rendered
+        holderElement.offsetHeight;
+      }
       
       const editor = new EditorJS({
         holder: holderIdRef.current,
@@ -404,6 +426,10 @@ export const Editor = memo(({
           editorInstanceRef.current = editor;
           isReadyRef.current = true;
           setIsLoading(false);
+          // Mark the element as ready
+          if (holderElement) {
+            holderElement.setAttribute('data-editor-ready', 'true');
+          }
           onReady?.();
         },
         onChange: async (api, event) => {
@@ -458,20 +484,24 @@ export const Editor = memo(({
     // Only initialize if component is mounted
     if (!isMounted) return;
     
-    // Use requestAnimationFrame to ensure DOM is fully rendered
-    const initializeWithRAF = () => {
-      requestAnimationFrame(() => {
-        // Double RAF to ensure the element is in the DOM
+    // Use a more reliable initialization approach
+    const initializeWithDelay = () => {
+      // First, wait for the next tick to ensure React has finished rendering
+      setTimeout(() => {
+        // Then use requestAnimationFrame to ensure DOM is fully rendered
         requestAnimationFrame(() => {
-          initializeEditor();
+          // Double RAF to ensure the element is in the DOM
+          requestAnimationFrame(() => {
+            // Additional small delay to ensure everything is ready
+            setTimeout(() => {
+              initializeEditor();
+            }, 50);
+          });
         });
-      });
+      }, 100);
     };
     
-    // Add a small delay to ensure DOM is ready and component is mounted
-    const timer = setTimeout(initializeWithRAF, 100);
-    
-    return () => clearTimeout(timer);
+    initializeWithDelay();
   }, [initializeEditor, isMounted]);
 
   // Cleanup function
@@ -583,7 +613,13 @@ export const Editor = memo(({
         minHeight: `${minHeight}px`,
         maxHeight: maxHeight ? `${maxHeight}px` : 'none',
         overflowY: maxHeight ? 'auto' : 'visible'
-      }} 
+      }}
+      ref={(el) => {
+        // Ensure the element is properly set up
+        if (el) {
+          el.setAttribute('data-editor-ready', 'false');
+        }
+      }}
     />
   );
 });
