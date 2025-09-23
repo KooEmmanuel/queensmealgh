@@ -612,7 +612,9 @@ export const Editor = memo(({
       style={{ 
         minHeight: `${minHeight}px`,
         maxHeight: maxHeight ? `${maxHeight}px` : 'none',
-        overflowY: maxHeight ? 'auto' : 'visible'
+        overflowY: maxHeight ? 'auto' : 'visible',
+        margin: 0,
+        padding: 0
       }}
       ref={(el) => {
         // Ensure the element is properly set up
